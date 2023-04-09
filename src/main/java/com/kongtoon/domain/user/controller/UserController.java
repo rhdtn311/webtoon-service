@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kongtoon.common.session.UserSessionUtil;
+import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
 import com.kongtoon.domain.user.service.UserService;
@@ -37,10 +38,10 @@ public class UserController {
 			@RequestBody @Valid LoginRequest loginRequest,
 			HttpServletRequest httpServletRequest
 	) {
-		userService.login(loginRequest);
+		UserAuthDTO userAuth = userService.login(loginRequest);
 
 		HttpSession session = httpServletRequest.getSession();
-		UserSessionUtil.setLoginMember(session, loginRequest.loginId());
+		UserSessionUtil.setLoginUserAuth(session, userAuth);
 
 		return ResponseEntity.noContent().build();
 	}

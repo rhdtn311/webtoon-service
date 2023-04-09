@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.common.security.PasswordEncoder;
+import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
 import com.kongtoon.domain.user.model.User;
@@ -20,11 +21,13 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	public void login(LoginRequest loginRequest) {
+	public UserAuthDTO login(LoginRequest loginRequest) {
 		User user = userRepository.findByLoginId(loginRequest.loginId())
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
 		validatePasswordIsCorrect(loginRequest.password(), user.getPassword());
+
+		return UserAuthDTO.from(user);
 	}
 
 	private void validatePasswordIsCorrect(String inputPassword, String originPassword) {

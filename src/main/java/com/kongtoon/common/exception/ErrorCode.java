@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
 	INVALID_INPUT("잘못된 입력값입니다.", 400),
+	UNAUTHORIZED("인증 실패입니다.", 401),
 
 	USER_NOT_FOUND("존재하지 않는 유저입니다.", 404),
 	LOGIN_FAIL("아이디/비밀번호를 확인해주세요.", 409),

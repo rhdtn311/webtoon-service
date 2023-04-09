@@ -5,8 +5,13 @@ import java.net.URI;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 
+import org.hibernate.validator.constraints.Length;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/users")
+@Validated
 @RequiredArgsConstructor
 public class UserController {
 
@@ -49,5 +55,23 @@ public class UserController {
 		return ResponseEntity
 				.created(URI.create(httpServletRequest.getRequestURI() + savedUserId))
 				.build();
+	}
+
+	@PostMapping("/signup/check-duplicate-id/{loginId}")
+	public ResponseEntity<Void> checkDuplicateId(
+			@PathVariable @NotBlank @Length(min = 5, max = 20) String loginId
+	) {
+		userService.validateDuplicateLoginId(loginId);
+
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/signup/check-duplicate-email/{email}")
+	public ResponseEntity<Void> checkDuplicateEmail(
+			@PathVariable @NotBlank @Email String email
+	) {
+		userService.validateDuplicateEmail(email);
+
+		return ResponseEntity.noContent().build();
 	}
 }

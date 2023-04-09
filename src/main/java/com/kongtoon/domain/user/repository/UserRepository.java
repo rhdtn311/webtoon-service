@@ -9,4 +9,8 @@ import com.kongtoon.domain.user.model.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findByLoginId(String loginId);
+
+	boolean existsByLoginId(String loginId);
+
+	boolean existsByEmail(String email);
 }

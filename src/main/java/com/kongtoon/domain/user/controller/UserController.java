@@ -1,5 +1,7 @@
 package com.kongtoon.domain.user.controller;
 
+import java.net.URI;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
+import com.kongtoon.domain.user.dto.request.SignupRequest;
 import com.kongtoon.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,5 +37,17 @@ public class UserController {
 		UserSessionUtil.setLoginMember(session, loginRequest.loginId());
 
 		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/signup")
+	public ResponseEntity<Void> signup(
+			@RequestBody @Valid SignupRequest signupRequest,
+			HttpServletRequest httpServletRequest
+	) {
+		Long savedUserId = userService.signup(signupRequest);
+
+		return ResponseEntity
+				.created(URI.create(httpServletRequest.getRequestURI() + savedUserId))
+				.build();
 	}
 }

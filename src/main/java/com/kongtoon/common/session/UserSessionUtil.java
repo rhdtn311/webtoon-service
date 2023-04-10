@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserSessionUtil {
 
-	private static final String LOGIN_MEMBER_ID = "LOGIN_MEMBER_ID";
+	public static final String LOGIN_MEMBER_ID = "LOGIN_MEMBER_ID";
 
 	public static void setLoginUserAuth(HttpSession session, UserAuthDTO userAuth) {
 		session.setAttribute(LOGIN_MEMBER_ID, userAuth);

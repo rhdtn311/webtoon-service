@@ -66,4 +66,12 @@ public class User extends BaseEntity {
 		this.authority = authority;
 		this.setAlarm = setAlarm;
 	}
+
+	public void setAuthority(UserAuthority authority) {
+		this.authority = authority;
+	}
+
+	public boolean isAuthor() {
+		return this.authority == UserAuthority.AUTHOR;
+	}
 }

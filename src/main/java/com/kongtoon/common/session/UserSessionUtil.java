@@ -16,7 +16,7 @@ public class UserSessionUtil {
 		session.setAttribute(LOGIN_MEMBER_ID, userAuth);
 	}
 
-	public static UserAuthDTO getLoginUserId(HttpSession session) {
+	public static UserAuthDTO getLoginUserAuth(HttpSession session) {
 		return (UserAuthDTO)session.getAttribute(LOGIN_MEMBER_ID);
 	}
 }

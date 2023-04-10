@@ -29,7 +29,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 		}
 
 		HttpSession session = request.getSession();
-		UserAuthDTO userAuth = UserSessionUtil.getLoginUserId(session);
+		UserAuthDTO userAuth = UserSessionUtil.getLoginUserAuth(session);
 
 		if (userAuth == null) {
 			throw new BusinessException(ErrorCode.UNAUTHORIZED);

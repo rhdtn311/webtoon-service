@@ -53,6 +53,9 @@ public class Comic extends BaseEntity {
 	@Column(name = "follower_count", nullable = false)
 	private int followerCount;
 
+	@Column(name = "isComplete", nullable = false)
+	private boolean isComplete;
+
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
 
@@ -62,6 +65,7 @@ public class Comic extends BaseEntity {
 
 	public Comic(String name, Genre genre, String summary, PublishDayOfWeek publishDayOfWeek, int followerCount,
 			Author author) {
+		this.isComplete = false;
 		this.name = name;
 		this.genre = genre;
 		this.summary = summary;

@@ -51,6 +51,7 @@ CREATE TABLE `comic`
     `summary`             varchar(500) NOT NULL,
     `publish_day_of_week` varchar(3)   NOT NULL,
     `follower_count`      int          NOT NULL,
+    'is_complete'         boolean      NOT NULL,
     `created_at`          Timestamp    NOT NULL,
     `updated_at`          Timestamp    NOT NULL,
     `deleted_at`          Timestamp    NULL,

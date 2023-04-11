@@ -7,6 +7,8 @@ import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 import com.kongtoon.common.security.annotation.LoginCheck;
 import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.author.model.dto.request.AuthorCreateRequest;
+import com.kongtoon.domain.author.model.dto.response.AuthorResponse;
 import com.kongtoon.domain.author.service.AuthorService;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.model.UserAuthority;
@@ -40,5 +43,13 @@ public class AuthorController {
 		Long savedAuthId = authorService.createAuthor(authorCreateRequest, userAuth.loginId());
 
 		return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI() + "/" + savedAuthId)).build();
+	}
+
+	@LoginCheck(authority = UserAuthority.USER)
+	@GetMapping("/{authorId}")
+	public ResponseEntity<AuthorResponse> getAuthor(@PathVariable Long authorId) {
+		AuthorResponse authorResponse = authorService.getAuthor(authorId);
+
+		return ResponseEntity.ok(authorResponse);
 	}
 }

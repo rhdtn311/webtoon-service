@@ -19,4 +19,8 @@ public class UserSessionUtil {
 	public static UserAuthDTO getLoginUserAuth(HttpSession session) {
 		return (UserAuthDTO)session.getAttribute(LOGIN_MEMBER_ID);
 	}
+
+	public static void deleteLoginUserAuth(HttpSession session) {
+		session.invalidate();
+	}
 }

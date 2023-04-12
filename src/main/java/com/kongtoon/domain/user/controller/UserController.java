@@ -46,6 +46,13 @@ public class UserController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout(HttpSession session) {
+		UserSessionUtil.deleteLoginUserAuth(session);
+
+		return ResponseEntity.noContent().build();
+	}
+
 	@PostMapping("/signup")
 	public ResponseEntity<Void> signup(
 			@RequestBody @Valid SignupRequest signupRequest,

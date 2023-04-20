@@ -189,3 +189,4 @@ $RECYCLE.BIN/
 
 # yml
 src/main/resources/application-db.yml
+src/main/resources/application-aws.yml

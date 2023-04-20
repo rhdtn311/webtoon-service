@@ -63,14 +63,13 @@ public class Comic extends BaseEntity {
 	@JoinColumn(name = "author_id", nullable = false)
 	private Author author;
 
-	public Comic(String name, Genre genre, String summary, PublishDayOfWeek publishDayOfWeek, int followerCount,
-			Author author) {
+	public Comic(String name, Genre genre, String summary, PublishDayOfWeek publishDayOfWeek, Author author) {
 		this.isComplete = false;
+		this.followerCount = 0;
 		this.name = name;
 		this.genre = genre;
 		this.summary = summary;
 		this.publishDayOfWeek = publishDayOfWeek;
-		this.followerCount = followerCount;
 		this.author = author;
 	}
 }

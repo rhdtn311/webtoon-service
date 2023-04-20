@@ -13,7 +13,11 @@ public enum ErrorCode {
 	DUPLICATE_EMAIL("중복된 이메일입니다.", 409),
 	DUPLICATE_APPLY_AUTHOR_AUTHORITY("이미 작가인 유저입니다.", 409),
 
-	AUTHOR_NOT_FOUND("존재하지 않는 작가입니다.", 404);
+	AUTHOR_NOT_FOUND("존재하지 않는 작가입니다.", 404),
+
+	FILE_NOT_UPLOAD("파일 업로드에 실패했습니다.", 409),
+	FILE_NOT_DELETE("파일 삭제에 실패했습니다.", 409),
+	NOT_ALLOWED_EXTENSION("허용된 확장자가 아닙니다.", 409);
 
 	private final String message;
 	private final int status;

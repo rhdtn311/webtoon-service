@@ -49,10 +49,9 @@ public class Thumbnail extends BaseEntity {
 	@JoinColumn(name = "comic_id", nullable = false)
 	private Comic comic;
 
-	public Thumbnail(ThumbnailType thumbnailType, String imageUrl, LocalDateTime deletedAt, Comic comic) {
+	public Thumbnail(ThumbnailType thumbnailType, String imageUrl, Comic comic) {
 		this.thumbnailType = thumbnailType;
 		this.imageUrl = imageUrl;
-		this.deletedAt = deletedAt;
 		this.comic = comic;
 	}
 }

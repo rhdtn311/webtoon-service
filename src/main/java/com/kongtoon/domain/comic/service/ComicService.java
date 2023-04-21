@@ -43,7 +43,7 @@ public class ComicService {
 		Comic comic = comicCreateRequest.toComic(author);
 		comicRepository.save(comic);
 
-		comicCreateRequest.thumbnailCreateRequests
+		comicCreateRequest.getThumbnailCreateRequests()
 				.forEach(thumbnailCreateRequest -> {
 					String thumbnailImageUrl = fileStorage.upload(
 							thumbnailCreateRequest.getThumbnailImage(),

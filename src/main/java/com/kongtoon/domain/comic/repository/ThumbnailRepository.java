@@ -11,4 +11,6 @@ import com.kongtoon.domain.comic.entity.ThumbnailType;
 public interface ThumbnailRepository extends JpaRepository<Thumbnail, Long> {
 
 	List<Thumbnail> findByComicInAndThumbnailType(List<Comic> comics, ThumbnailType thumbnailType);
+
+	List<Thumbnail> findByComic(Comic comic);
 }

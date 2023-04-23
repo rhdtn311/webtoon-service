@@ -18,7 +18,13 @@ public class FileEventListener {
 
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
-	public void deleteFile(FileDeleteEvent fileDeleteEvent) {
-		fileStorage.delete(fileDeleteEvent.getKey(), ImageFileType.COMIC_THUMBNAIL);
+	public void deleteFileAfterRollback(FileDeleteAfterRollbackEvent fileDeleteAfterRollbackEvent) {
+		fileStorage.delete(fileDeleteAfterRollbackEvent.getFileUrl(), ImageFileType.COMIC_THUMBNAIL);
+	}
+
+	@Async
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void deleteFileAfterCommit(FileDeleteAfterCommitEvent fileDeleteAfterRollbackEvent) {
+		fileStorage.delete(fileDeleteAfterRollbackEvent.getFileUrl(), ImageFileType.COMIC_THUMBNAIL);
 	}
 }

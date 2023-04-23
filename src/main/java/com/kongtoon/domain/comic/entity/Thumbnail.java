@@ -54,4 +54,9 @@ public class Thumbnail extends BaseEntity {
 		this.imageUrl = imageUrl;
 		this.comic = comic;
 	}
+
+	public void update(ThumbnailType thumbnailType, String imageUrl) {
+		this.thumbnailType = thumbnailType;
+		this.imageUrl = imageUrl;
+	}
 }

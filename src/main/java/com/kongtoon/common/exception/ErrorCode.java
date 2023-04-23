@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
 	INVALID_INPUT("잘못된 입력값입니다.", 400),
-	UNAUTHORIZED("인증 실패입니다.", 401),
+	AUTHENTICATION_FAIL("인증 실패입니다.", 401),
+	UNAUTHORIZED("권한이 없습니다.", 403),
 
 	USER_NOT_FOUND("존재하지 않는 유저입니다.", 404),
 	LOGIN_FAIL("아이디/비밀번호를 확인해주세요.", 409),
@@ -14,6 +15,9 @@ public enum ErrorCode {
 	DUPLICATE_APPLY_AUTHOR_AUTHORITY("이미 작가인 유저입니다.", 409),
 
 	AUTHOR_NOT_FOUND("존재하지 않는 작가입니다.", 404),
+
+	COMIC_NOT_FOUND("존재하지 않는 웹툰입니다.", 404),
+	NOT_EXISTS_THUMBNAIL_TYPE("존재하지 않는 썸네일 타입입니다.", 404),
 
 	FILE_NOT_UPLOAD("파일 업로드에 실패했습니다.", 409),
 	FILE_NOT_DELETE("파일 삭제에 실패했습니다.", 409),

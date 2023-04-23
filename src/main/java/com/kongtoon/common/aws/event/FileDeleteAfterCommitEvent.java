@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class FileDeleteEvent {
-	private final String key;
+public class FileDeleteAfterCommitEvent {
+	private final String fileUrl;
 }

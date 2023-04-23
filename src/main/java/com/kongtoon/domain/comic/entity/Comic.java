@@ -72,4 +72,11 @@ public class Comic extends BaseEntity {
 		this.publishDayOfWeek = publishDayOfWeek;
 		this.author = author;
 	}
+
+	public void update(String name, Genre genre, String summary, PublishDayOfWeek publishDayOfWeek) {
+		this.name = name;
+		this.genre = genre;
+		this.summary = summary;
+		this.publishDayOfWeek = publishDayOfWeek;
+	}
 }

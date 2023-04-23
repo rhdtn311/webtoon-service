@@ -1,5 +1,7 @@
 package com.kongtoon.domain.author.model;
 
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -50,5 +52,9 @@ public class Author extends BaseEntity {
 		this.introduction = introduction;
 		this.belong = belong;
 		this.user = user;
+	}
+
+	public boolean isDifferenceUser(User user) {
+		return !Objects.equals(this.user.getId(), user.getId());
 	}
 }

@@ -5,7 +5,6 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.Length;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +26,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @ComicRequestValid
-public class ComicCreateRequest {
+public class ComicRequest {
 
 	@Length(min = 1, max = 30)
 	@NotBlank
@@ -43,15 +42,14 @@ public class ComicCreateRequest {
 	@NotNull
 	private PublishDayOfWeek publishDayOfWeek;
 
-	@NotNull
-	@Size(min = 2, max = 2)
 	@Valid
-	private List<ThumbnailCreateRequest> thumbnailCreateRequests;
+	@NotNull
+	private List<ThumbnailRequest> thumbnailRequests;
 
 	@Getter
 	@Setter
 	@NoArgsConstructor
-	public static class ThumbnailCreateRequest {
+	public static class ThumbnailRequest {
 
 		@NotNull
 		private ThumbnailType thumbnailType;

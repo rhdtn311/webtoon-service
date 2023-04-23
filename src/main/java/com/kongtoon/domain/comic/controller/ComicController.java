@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.kongtoon.common.security.annotation.LoginCheck;
 import com.kongtoon.common.session.UserSessionUtil;
-import com.kongtoon.domain.comic.entity.dto.request.ComicCreateRequest;
+import com.kongtoon.domain.comic.entity.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.service.ComicService;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.model.UserAuthority;
@@ -31,11 +31,11 @@ public class ComicController {
 	@LoginCheck(authority = UserAuthority.AUTHOR)
 	@PostMapping
 	public ResponseEntity<Void> createComic(
-			@ModelAttribute @Valid ComicCreateRequest comicCreateRequest,
+			@ModelAttribute @Valid ComicRequest comicRequest,
 			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth,
 			HttpServletRequest httpServletRequest
 	) {
-		Long savedComicId = comicService.createComic(comicCreateRequest, userAuth.loginId());
+		Long savedComicId = comicService.createComic(comicRequest, userAuth.loginId());
 
 		return ResponseEntity
 				.created(URI.create(httpServletRequest.getRequestURI() + savedComicId))

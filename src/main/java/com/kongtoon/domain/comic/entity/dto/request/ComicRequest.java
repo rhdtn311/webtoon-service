@@ -27,7 +27,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @ComicRequestValid
-public class ComicCreateRequest {
+public class ComicRequest {
 
 	@Length(min = 1, max = 30)
 	@NotBlank

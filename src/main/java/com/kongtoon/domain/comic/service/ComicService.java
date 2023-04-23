@@ -14,7 +14,7 @@ import com.kongtoon.domain.author.model.Author;
 import com.kongtoon.domain.author.repository.AuthorRepository;
 import com.kongtoon.domain.comic.entity.Comic;
 import com.kongtoon.domain.comic.entity.Thumbnail;
-import com.kongtoon.domain.comic.entity.dto.request.ComicCreateRequest;
+import com.kongtoon.domain.comic.entity.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
 import com.kongtoon.domain.user.model.User;
@@ -36,14 +36,14 @@ public class ComicService {
 	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional
-	public Long createComic(ComicCreateRequest comicCreateRequest, String loginId) {
+	public Long createComic(ComicRequest comicRequest, String loginId) {
 		User user = getUser(loginId);
 		Author author = getAuthor(user);
 
-		Comic comic = comicCreateRequest.toComic(author);
+		Comic comic = comicRequest.toComic(author);
 		comicRepository.save(comic);
 
-		comicCreateRequest.getThumbnailCreateRequests()
+		comicRequest.getThumbnailCreateRequests()
 				.forEach(thumbnailCreateRequest -> {
 					String thumbnailImageUrl = fileStorage.upload(
 							thumbnailCreateRequest.getThumbnailImage(),

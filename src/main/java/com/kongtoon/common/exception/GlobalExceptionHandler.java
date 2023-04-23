@@ -2,6 +2,7 @@ package com.kongtoon.common.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,6 +24,15 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(value = MethodArgumentNotValidException.class)
 	protected ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException exception) {
+
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(ErrorResponse.input(ErrorCode.INVALID_INPUT.name(), ErrorCode.INVALID_INPUT.getMessage(),
+						exception.getFieldErrors()));
+	}
+
+	@ExceptionHandler(value = BindException.class)
+	protected ResponseEntity<ErrorResponse> handleValidationException(BindException exception) {
 
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)

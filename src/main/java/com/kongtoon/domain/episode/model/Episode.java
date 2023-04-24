@@ -1,4 +1,4 @@
-package com.kongtoon.domain.episode.domain;
+package com.kongtoon.domain.episode.model;
 
 import java.time.LocalDateTime;
 

@@ -18,7 +18,7 @@ import com.kongtoon.domain.comic.entity.Thumbnail;
 import com.kongtoon.domain.comic.entity.ThumbnailType;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
-import com.kongtoon.domain.episode.domain.Episode;
+import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.episode.repository.EpisodeRepository;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;

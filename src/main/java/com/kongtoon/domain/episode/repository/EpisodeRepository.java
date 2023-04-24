@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.kongtoon.domain.comic.entity.Comic;
-import com.kongtoon.domain.episode.domain.Episode;
+import com.kongtoon.domain.episode.model.Episode;
 
 public interface EpisodeRepository extends JpaRepository<Episode, Long> {
 

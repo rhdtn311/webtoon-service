@@ -1,6 +1,7 @@
 package com.kongtoon.domain.episode.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,6 @@ public interface EpisodeRepository extends JpaRepository<Episode, Long> {
 					+ "AND e.comic IN (:comics)"
 	)
 	List<Episode> findRecentlyEpisodesByComics(List<Comic> comics);
+
+	Optional<Episode> findFirstByComicOrderByEpisodeNumberDesc(Comic comic);
 }

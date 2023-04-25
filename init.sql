@@ -95,6 +95,9 @@ create table episode_image
     content_image_url varchar(2048) not null,
     content_order     int default 0 not null,
     episode_id        bigint        null,
+    `created_at`      Timestamp     NOT NULL,
+    `updated_at`      Timestamp     NOT NULL,
+    `deleted_at`      Timestamp     NULL,
     constraint episode_image_pk
         primary key (id),
     constraint episode_image_episode__fk

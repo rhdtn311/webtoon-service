@@ -1,5 +1,7 @@
 package com.kongtoon.common.aws.event;
 
+import com.kongtoon.common.aws.FileType;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -7,4 +9,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class FileDeleteAfterCommitEvent {
 	private final String fileUrl;
+	private final FileType fileType;
 }

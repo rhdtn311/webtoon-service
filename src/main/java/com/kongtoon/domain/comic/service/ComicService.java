@@ -56,7 +56,8 @@ public class ComicService {
 					Thumbnail thumbnail = thumbnailRequest.toThumbnail(thumbnailImageUrl, comic);
 					thumbnailRepository.save(thumbnail);
 
-					applicationEventPublisher.publishEvent(new FileDeleteAfterRollbackEvent(thumbnailImageUrl));
+					applicationEventPublisher.publishEvent(
+							new FileDeleteAfterRollbackEvent(thumbnailImageUrl, ImageFileType.COMIC_THUMBNAIL));
 				});
 
 		return comic.getId();
@@ -84,14 +85,16 @@ public class ComicService {
 
 			String thumbnailImageUrl = fileStorage.upload(thumbnailRequest.getThumbnailImage(),
 					ImageFileType.COMIC_THUMBNAIL);
-			applicationEventPublisher.publishEvent(new FileDeleteAfterRollbackEvent(thumbnailImageUrl));
+			applicationEventPublisher.publishEvent(
+					new FileDeleteAfterRollbackEvent(thumbnailImageUrl, ImageFileType.COMIC_THUMBNAIL));
 
 			thumbnails.stream()
 					.filter(thumbnail -> thumbnail.getThumbnailType().isSameType(thumbnailRequest.getThumbnailType()))
 					.findFirst()
 					.ifPresentOrElse(
 							thumbnail -> {
-								applicationEventPublisher.publishEvent(new FileDeleteAfterCommitEvent(thumbnail.getImageUrl()));
+								applicationEventPublisher.publishEvent(
+										new FileDeleteAfterCommitEvent(thumbnail.getImageUrl(), ImageFileType.COMIC_THUMBNAIL));
 								thumbnail.update(thumbnail.getThumbnailType(), thumbnailImageUrl);
 							},
 							() -> {

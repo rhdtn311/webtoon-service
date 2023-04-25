@@ -6,7 +6,6 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.kongtoon.common.aws.FileStorage;
-import com.kongtoon.common.aws.ImageFileType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,12 +18,12 @@ public class FileEventListener {
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
 	public void deleteFileAfterRollback(FileDeleteAfterRollbackEvent fileDeleteAfterRollbackEvent) {
-		fileStorage.delete(fileDeleteAfterRollbackEvent.getFileUrl(), ImageFileType.COMIC_THUMBNAIL);
+		fileStorage.delete(fileDeleteAfterRollbackEvent.getFileUrl(), fileDeleteAfterRollbackEvent.getFileType());
 	}
 
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void deleteFileAfterCommit(FileDeleteAfterCommitEvent fileDeleteAfterRollbackEvent) {
-		fileStorage.delete(fileDeleteAfterRollbackEvent.getFileUrl(), ImageFileType.COMIC_THUMBNAIL);
+		fileStorage.delete(fileDeleteAfterRollbackEvent.getFileUrl(), fileDeleteAfterRollbackEvent.getFileType());
 	}
 }

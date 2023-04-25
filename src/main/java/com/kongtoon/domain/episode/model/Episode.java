@@ -1,4 +1,4 @@
-package com.kongtoon.domain.episode.domain;
+package com.kongtoon.domain.episode.model;
 
 import java.time.LocalDateTime;
 
@@ -40,9 +40,6 @@ public class Episode extends BaseEntity {
 	@Column(name = "episode_number", nullable = false)
 	private int episodeNumber;
 
-	@Column(name = "content_image_url", length = 2048, nullable = false)
-	private String contentImageUrl;
-
 	@Column(name = "thumbnail_url", length = 2048, nullable = false)
 	private String thumbnailUrl;
 
@@ -56,11 +53,10 @@ public class Episode extends BaseEntity {
 	@JoinColumn(name = "comic_id", nullable = false)
 	private Comic comic;
 
-	public Episode(String title, int episodeNumber, String contentImageUrl, String thumbnailUrl, int likeCount,
+	public Episode(String title, int episodeNumber, String thumbnailUrl, int likeCount,
 			Comic comic) {
 		this.title = title;
 		this.episodeNumber = episodeNumber;
-		this.contentImageUrl = contentImageUrl;
 		this.thumbnailUrl = thumbnailUrl;
 		this.likeCount = likeCount;
 		this.comic = comic;

@@ -15,7 +15,7 @@ import javax.persistence.Table;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
-import com.kongtoon.domain.episode.domain.Episode;
+import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.user.model.User;
 
 import lombok.AccessLevel;

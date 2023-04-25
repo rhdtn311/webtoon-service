@@ -76,18 +76,33 @@ DROP TABLE IF EXISTS `episode`;
 
 CREATE TABLE `episode`
 (
-    `id`                bigint AUTO_INCREMENT PRIMARY KEY,
-    `title`             varchar(255)  NOT NULL,
-    `episode_number`    int           NOT NULL,
-    `content_image_url` varchar(2048) NOT NULL,
-    `thumbnail_url`     varchar(2048) NOT NULL,
-    `like_count`        int           NOT NULL,
-    `comic_id`          bigint        NOT NULL,
-    `created_at`        Timestamp     NOT NULL,
-    `updated_at`        Timestamp     NOT NULL,
-    `deleted_at`        Timestamp     NULL
+    `id`             bigint AUTO_INCREMENT PRIMARY KEY,
+    `title`          varchar(255)  NOT NULL,
+    `episode_number` int           NOT NULL,
+    `thumbnail_url`  varchar(2048) NOT NULL,
+    `like_count`     int           NOT NULL,
+    `comic_id`       bigint        NOT NULL,
+    `created_at`     Timestamp     NOT NULL,
+    `updated_at`     Timestamp     NOT NULL,
+    `deleted_at`     Timestamp     NULL
 );
 
+DROP TABLE IF EXISTS `episode_image`;
+
+create table episode_image
+(
+    id                bigint auto_increment,
+    content_image_url varchar(2048) not null,
+    content_order     int default 0 not null,
+    episode_id        bigint        null,
+    `created_at`      Timestamp     NOT NULL,
+    `updated_at`      Timestamp     NOT NULL,
+    `deleted_at`      Timestamp     NULL,
+    constraint episode_image_pk
+        primary key (id),
+    constraint episode_image_episode__fk
+        foreign key (episode_id) references episode (id)
+);
 
 DROP TABLE IF EXISTS `follow`;
 

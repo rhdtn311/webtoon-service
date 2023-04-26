@@ -39,7 +39,7 @@ public class EpisodeController {
 			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth,
 			HttpServletRequest httpServletRequest
 	) {
-		Long savedEpisodeId = episodeService.createEpisode(episodeRequest, comicId, userAuth.loginId());
+		Long savedEpisodeId = episodeService.createEpisodeAndEpisodeImage(episodeRequest, comicId, userAuth.loginId());
 
 		return ResponseEntity
 				.created(URI.create(httpServletRequest.getRequestURI() + "/" + savedEpisodeId))

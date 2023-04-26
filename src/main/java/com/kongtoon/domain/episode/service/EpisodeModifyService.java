@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class EpisodeService {
+public class EpisodeModifyService {
 
 	private static final int FIRST_EPISODE_NUMBER = 1;
 

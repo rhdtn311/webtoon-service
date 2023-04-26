@@ -19,6 +19,8 @@ public enum ErrorCode {
 	COMIC_NOT_FOUND("존재하지 않는 웹툰입니다.", 404),
 	NOT_EXISTS_THUMBNAIL_TYPE("존재하지 않는 썸네일 타입입니다.", 404),
 
+	EPISODE_NOT_FOUND("존재하지 않는 에피소드입니다.", 404),
+
 	FILE_NOT_UPLOAD("파일 업로드에 실패했습니다.", 409),
 	FILE_NOT_DELETE("파일 삭제에 실패했습니다.", 409),
 	NOT_ALLOWED_EXTENSION("허용된 확장자가 아닙니다.", 409);

@@ -61,4 +61,9 @@ public class Episode extends BaseEntity {
 		this.likeCount = likeCount;
 		this.comic = comic;
 	}
+
+	public void updateEpisode(String title, String thumbnailUrl) {
+		this.title = title;
+		this.thumbnailUrl = thumbnailUrl;
+	}
 }

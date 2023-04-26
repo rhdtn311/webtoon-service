@@ -46,4 +46,12 @@ public class EpisodeImage extends BaseEntity {
 		this.contentOrder = contentOrder;
 		this.episode = episode;
 	}
+
+	public boolean isSameContentOrder(int contentOrder) {
+		return this.contentOrder == contentOrder;
+	}
+
+	public void updateEpisodeImage(String contentImageUrl) {
+		this.contentImageUrl = contentImageUrl;
+	}
 }

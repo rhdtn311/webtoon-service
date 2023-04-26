@@ -8,7 +8,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.kongtoon.common.aws.FileStorage;
+import com.kongtoon.common.aws.FileType;
 import com.kongtoon.common.aws.ImageFileType;
+import com.kongtoon.common.aws.event.FileDeleteAfterCommitEvent;
 import com.kongtoon.common.aws.event.FileDeleteAfterRollbackEvent;
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
@@ -71,6 +73,128 @@ public class EpisodeService {
 		return episode.getId();
 	}
 
+	@Transactional
+	public void updateEpisode(EpisodeRequest episodeRequest, Long episodeId, String loginId) {
+		User user = getUser(loginId);
+		Episode episode = getEpisodeWithComicAndAuthor(episodeId);
+		Comic comic = episode.getComic();
+		Author author = comic.getAuthor();
+
+		validateSameAuthor(author, user);
+
+		deleteFileAfterCommitEvent(episode.getThumbnailUrl(), ImageFileType.EPISODE_THUMBNAIL);
+
+		String thumbnailImageUrl = fileStorage.upload(episodeRequest.getThumbnailImage(), ImageFileType.EPISODE_THUMBNAIL);
+
+		deleteFileAfterRollbackEvent(thumbnailImageUrl, ImageFileType.EPISODE_THUMBNAIL);
+
+		episode.updateEpisode(episodeRequest.getTitle(), thumbnailImageUrl);
+
+		List<EpisodeImage> savedEpisodeImages = episodeImageRepository.findByEpisode(episode);
+		List<EpisodeContentRequest> episodeContentRequests = episodeRequest.getEpisodeContentRequests();
+
+		updateEpisodeContentImages(savedEpisodeImages, episodeContentRequests);
+
+		createEpisodeContentImages(episode, savedEpisodeImages, episodeContentRequests);
+
+		deleteEpisodeContentImages(savedEpisodeImages, episodeContentRequests);
+	}
+
+	private void deleteEpisodeContentImages(List<EpisodeImage> savedEpisodeImages,
+			List<EpisodeContentRequest> episodeContentRequests) {
+		List<EpisodeImage> removeEpisodeContentImages = getRemoveEpisodeContentImages(
+				episodeContentRequests,
+				savedEpisodeImages
+		);
+
+		episodeImageRepository.deleteAll(removeEpisodeContentImages);
+		removeEpisodeContentImages.forEach(
+				episodeImage -> deleteFileAfterCommitEvent(episodeImage.getContentImageUrl(), ImageFileType.EPISODE)
+		);
+	}
+
+	private void createEpisodeContentImages(
+			Episode episode,
+			List<EpisodeImage> savedEpisodeImages,
+			List<EpisodeContentRequest> episodeContentRequests
+	) {
+		List<EpisodeContentRequest> newEpisodeContentImages = getNewEpisodeContentImages(
+				episodeContentRequests,
+				savedEpisodeImages
+		);
+
+		newEpisodeContentImages.forEach(
+				episodeContentRequest -> {
+					String episodeImageUrl = fileStorage.upload(episodeContentRequest.getContentImage(), ImageFileType.EPISODE);
+					EpisodeImage episodeImage = episodeContentRequest.toEpisodeImage(episodeImageUrl, episode);
+					episodeImageRepository.save(episodeImage);
+
+					deleteFileAfterRollbackEvent(episodeImageUrl, ImageFileType.EPISODE);
+				}
+		);
+	}
+
+	private void updateEpisodeContentImages(
+			List<EpisodeImage> savedEpisodeImages,
+			List<EpisodeContentRequest> episodeContentRequests
+	) {
+		for (EpisodeImage savedEpisodeImage : savedEpisodeImages) {
+			episodeContentRequests.stream()
+					.filter(
+							episodeContentRequest -> savedEpisodeImage.isSameContentOrder(episodeContentRequest.getContentOrder())
+					)
+					.findFirst()
+					.ifPresent(episodeContentRequest -> {
+								String episodeImageUrl = fileStorage.upload(episodeContentRequest.getContentImage(), ImageFileType.EPISODE);
+
+								deleteFileAfterCommitEvent(savedEpisodeImage.getContentImageUrl(), ImageFileType.EPISODE);
+
+								savedEpisodeImage.updateEpisodeImage(episodeImageUrl);
+
+								deleteFileAfterRollbackEvent(episodeImageUrl, ImageFileType.EPISODE);
+							}
+					);
+		}
+	}
+
+	private List<EpisodeContentRequest> getNewEpisodeContentImages(
+			List<EpisodeContentRequest> episodeContentRequests,
+			List<EpisodeImage> savedEpisodeImages
+	) {
+		List<Integer> savedEpisodeImageOrders = savedEpisodeImages.stream()
+				.map(EpisodeImage::getContentOrder)
+				.toList();
+
+		return episodeContentRequests.stream()
+				.filter(episodeContentRequest -> !savedEpisodeImageOrders.contains(episodeContentRequest.getContentOrder()))
+				.toList();
+	}
+
+	private List<EpisodeImage> getRemoveEpisodeContentImages(
+			List<EpisodeContentRequest> episodeContentRequests,
+			List<EpisodeImage> savedEpisodeImages
+	) {
+		List<Integer> episodeContentImageOrders = episodeContentRequests.stream()
+				.map(EpisodeContentRequest::getContentOrder)
+				.toList();
+
+		return savedEpisodeImages.stream()
+				.filter(episodeImage -> !episodeContentImageOrders.contains(episodeImage.getContentOrder()))
+				.toList();
+	}
+
+	private void deleteFileAfterCommitEvent(String fileUrl, FileType fileType) {
+		applicationEventPublisher.publishEvent(
+				new FileDeleteAfterCommitEvent(fileUrl, fileType)
+		);
+	}
+
+	private void deleteFileAfterRollbackEvent(String fileUrl, FileType fileType) {
+		applicationEventPublisher.publishEvent(
+				new FileDeleteAfterCommitEvent(fileUrl, fileType)
+		);
+	}
+
 	private Integer getNextEpisodeNumber(Comic comic) {
 		return episodeRepository.findFirstByComicOrderByEpisodeNumberDesc(comic)
 				.map(episode -> episode.getEpisodeNumber() + 1)
@@ -91,5 +215,10 @@ public class EpisodeService {
 	private Comic getComicWithAuthor(Long comicId) {
 		return comicRepository.findComicWithAuthor(comicId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.COMIC_NOT_FOUND));
+	}
+
+	private Episode getEpisodeWithComicAndAuthor(Long episodeId) {
+		return episodeRepository.findByIdWithComicAndAuthor(episodeId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.EPISODE_NOT_FOUND));
 	}
 }

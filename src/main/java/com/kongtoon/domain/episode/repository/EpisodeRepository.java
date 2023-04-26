@@ -21,4 +21,12 @@ public interface EpisodeRepository extends JpaRepository<Episode, Long> {
 	List<Episode> findRecentlyEpisodesByComics(List<Comic> comics);
 
 	Optional<Episode> findFirstByComicOrderByEpisodeNumberDesc(Comic comic);
+
+	@Query(
+			"SELECT e "
+					+ "FROM Episode e "
+					+ "JOIN FETCH e.comic c "
+					+ "JOIN FETCH c.author a "
+					+ "WHERE e.id = :episodeId")
+	Optional<Episode> findByIdWithComicAndAuthor(Long episodeId);
 }

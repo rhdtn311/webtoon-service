@@ -7,7 +7,9 @@ import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,5 +44,17 @@ public class EpisodeController {
 		return ResponseEntity
 				.created(URI.create(httpServletRequest.getRequestURI() + "/" + savedEpisodeId))
 				.build();
+	}
+
+	@LoginCheck(authority = UserAuthority.AUTHOR)
+	@PutMapping("/{episodeId}")
+	public ResponseEntity<Void> updateEpisode(
+			@PathVariable Long episodeId,
+			@ModelAttribute @Valid EpisodeRequest episodeRequest,
+			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+	) {
+		episodeService.updateEpisode(episodeRequest, episodeId, userAuth.loginId());
+
+		return ResponseEntity.noContent().build();
 	}
 }

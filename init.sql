@@ -81,6 +81,8 @@ CREATE TABLE `episode`
     `episode_number` int           NOT NULL,
     `thumbnail_url`  varchar(2048) NOT NULL,
     `like_count`     int           NOT NULL,
+    'star_count'     int           NOT NULL,
+    'star_score'     double        NOT NULL,
     `comic_id`       bigint        NOT NULL,
     `created_at`     Timestamp     NOT NULL,
     `updated_at`     Timestamp     NOT NULL,

@@ -1,5 +1,7 @@
 package com.kongtoon.domain.episode.service;
 
+import static com.kongtoon.domain.episode.model.dto.response.EpisodeResponse.*;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -13,9 +15,12 @@ import com.kongtoon.domain.comic.entity.ThumbnailType;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
 import com.kongtoon.domain.episode.model.Episode;
+import com.kongtoon.domain.episode.model.EpisodeImage;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses.ComicInfo;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses.EpisodeListResponse;
+import com.kongtoon.domain.episode.model.dto.response.EpisodeResponse;
+import com.kongtoon.domain.episode.repository.EpisodeImageRepository;
 import com.kongtoon.domain.episode.repository.EpisodeRepository;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
@@ -35,6 +40,7 @@ public class EpisodeReadService {
 	private final UserRepository userRepository;
 	private final ViewRepository viewRepository;
 	private final ThumbnailRepository thumbnailRepository;
+	private final EpisodeImageRepository episodeImageRepository;
 
 	@Transactional(readOnly = true)
 	public EpisodeListResponses getEpisodes(Long comicId, String loginId) {
@@ -51,6 +57,15 @@ public class EpisodeReadService {
 				comicInfo,
 				episodesInfos
 		);
+	}
+
+	@Transactional(readOnly = true)
+	public EpisodeResponse getEpisodeResponse(Long episodeId) {
+		Episode episode = getEpisode(episodeId);
+		List<EpisodeImage> episodeImages = getEpisodeImages(episode);
+		List<EpisodeImageResponse> episodeImageResponses = EpisodeImageResponse.toEpisodeImageResponses(episodeImages);
+
+		return EpisodeResponse.from(episode, episodeImageResponses);
 	}
 
 	private List<EpisodeListResponse> getEpisodeListResponses(List<Episode> episodes, User user) {
@@ -80,5 +95,14 @@ public class EpisodeReadService {
 		return thumbnailRepository.findByComicAndThumbnailType(comic, ThumbnailType.MAIN)
 				.map(Thumbnail::getImageUrl)
 				.orElse(EMPTY_MAIN_THUMBNAIL_URL);
+	}
+
+	private Episode getEpisode(Long episodeId) {
+		return episodeRepository.findById(episodeId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.EPISODE_NOT_FOUND));
+	}
+
+	private List<EpisodeImage> getEpisodeImages(Episode episode) {
+		return episodeImageRepository.findByEpisode(episode);
 	}
 }

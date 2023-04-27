@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 import com.kongtoon.common.security.annotation.LoginCheck;
 import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.episode.model.dto.request.EpisodeRequest;
+import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses;
 import com.kongtoon.domain.episode.service.EpisodeModifyService;
+import com.kongtoon.domain.episode.service.EpisodeReadService;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.model.UserAuthority;
 
@@ -28,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class EpisodeController {
 
 	private final EpisodeModifyService episodeModifyService;
+	private final EpisodeReadService episodeReadService;
 
 	@LoginCheck(authority = UserAuthority.AUTHOR)
 	@PostMapping("/episodes")
@@ -55,5 +59,15 @@ public class EpisodeController {
 		episodeModifyService.updateEpisode(episodeRequest, episodeId, userAuth.loginId());
 
 		return ResponseEntity.noContent().build();
+	}
+
+	@LoginCheck(authority = UserAuthority.USER)
+	@GetMapping("/comics/{comicId}/episodes")
+	public ResponseEntity<EpisodeListResponses> getEpisodes(
+			@PathVariable Long comicId,
+			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+	) {
+		EpisodeListResponses episodes = episodeReadService.getEpisodes(comicId, userAuth.loginId());
+		return ResponseEntity.ok(episodes);
 	}
 }

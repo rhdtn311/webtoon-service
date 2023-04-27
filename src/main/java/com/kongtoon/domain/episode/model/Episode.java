@@ -66,4 +66,8 @@ public class Episode extends BaseEntity {
 		this.title = title;
 		this.thumbnailUrl = thumbnailUrl;
 	}
+
+	public boolean isSame(Episode episode) {
+		return this == episode;
+	}
 }

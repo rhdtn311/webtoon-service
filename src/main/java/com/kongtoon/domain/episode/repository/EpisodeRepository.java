@@ -29,4 +29,12 @@ public interface EpisodeRepository extends JpaRepository<Episode, Long> {
 					+ "JOIN FETCH c.author a "
 					+ "WHERE e.id = :episodeId")
 	Optional<Episode> findByIdWithComicAndAuthor(Long episodeId);
+
+	@Query(
+			"SELECT e "
+					+ "FROM Episode e "
+					+ "JOIN FETCH e.comic c "
+					+ "JOIN FETCH c.author "
+					+ "WHERE c.id = :comicId")
+	List<Episode> findByComicIdWithComicAndAuthor(Long comicId);
 }

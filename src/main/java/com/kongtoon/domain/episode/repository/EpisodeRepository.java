@@ -20,14 +20,13 @@ public interface EpisodeRepository extends JpaRepository<Episode, Long> {
 	)
 	List<Episode> findRecentlyEpisodesByComics(List<Comic> comics);
 
-	Optional<Episode> findFirstByComicOrderByEpisodeNumberDesc(Comic comic);
-
 	@Query(
 			"SELECT e "
 					+ "FROM Episode e "
 					+ "JOIN FETCH e.comic c "
 					+ "JOIN FETCH c.author a "
-					+ "WHERE e.id = :episodeId")
+					+ "WHERE e.id = :episodeId"
+	)
 	Optional<Episode> findByIdWithComicAndAuthor(Long episodeId);
 
 	@Query(
@@ -35,6 +34,17 @@ public interface EpisodeRepository extends JpaRepository<Episode, Long> {
 					+ "FROM Episode e "
 					+ "JOIN FETCH e.comic c "
 					+ "JOIN FETCH c.author "
-					+ "WHERE c.id = :comicId")
+					+ "WHERE c.id = :comicId"
+	)
 	List<Episode> findByComicIdWithComicAndAuthor(Long comicId);
+
+	@Query(
+			"SELECT e "
+					+ "FROM Episode e "
+					+ "JOIN FETCH e.comic "
+					+ "WHERE e.id = :episodeId"
+	)
+	Optional<Episode> findByIdWithComic(Long episodeId);
+
+	Optional<Episode> findFirstByComicOrderByEpisodeNumberDesc(Comic comic);
 }

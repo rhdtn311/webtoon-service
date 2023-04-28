@@ -1,5 +1,6 @@
 package com.kongtoon.domain.episode.service;
 
+import static com.kongtoon.domain.episode.model.dto.response.EpisodeDetailResponse.*;
 import static com.kongtoon.domain.episode.model.dto.response.EpisodeResponse.*;
 
 import java.util.List;
@@ -14,14 +15,20 @@ import com.kongtoon.domain.comic.entity.Thumbnail;
 import com.kongtoon.domain.comic.entity.ThumbnailType;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
+import com.kongtoon.domain.comment.repository.CommentRepository;
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.episode.model.EpisodeImage;
+import com.kongtoon.domain.episode.model.dto.response.EpisodeDetailResponse;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses.ComicInfo;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses.EpisodeListResponse;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeResponse;
 import com.kongtoon.domain.episode.repository.EpisodeImageRepository;
 import com.kongtoon.domain.episode.repository.EpisodeRepository;
+import com.kongtoon.domain.follow.repository.FollowRepository;
+import com.kongtoon.domain.like.model.LikeType;
+import com.kongtoon.domain.like.repository.LikeRepository;
+import com.kongtoon.domain.star.repository.StarRepository;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import com.kongtoon.domain.view.model.View;
@@ -34,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class EpisodeReadService {
 
 	private static final String EMPTY_MAIN_THUMBNAIL_URL = "";
+	private static final Double DEFAULT_STAR_AVG = 0D;
 
 	private final EpisodeRepository episodeRepository;
 	private final ComicRepository comicRepository;
@@ -41,6 +49,10 @@ public class EpisodeReadService {
 	private final ViewRepository viewRepository;
 	private final ThumbnailRepository thumbnailRepository;
 	private final EpisodeImageRepository episodeImageRepository;
+	private final LikeRepository likeRepository;
+	private final FollowRepository followRepository;
+	private final StarRepository starRepository;
+	private final CommentRepository commentRepository;
 
 	@Transactional(readOnly = true)
 	public EpisodeListResponses getEpisodes(Long comicId, String loginId) {
@@ -66,6 +78,43 @@ public class EpisodeReadService {
 		List<EpisodeImageResponse> episodeImageResponses = EpisodeImageResponse.toEpisodeImageResponses(episodeImages);
 
 		return EpisodeResponse.from(episode, episodeImageResponses);
+	}
+
+	@Transactional(readOnly = true)
+	public EpisodeDetailResponse getEpisodeDetailResponse(Long episodeId, String loginId) {
+		User user = getUser(loginId);
+		Episode episode = getEpisodeWithComic(episodeId);
+		Comic comic = episode.getComic();
+
+		LikeResponse likeResponse = getLikeInfo(episodeId, user);
+		FollowResponse followResponse = getFollowInfo(user, comic);
+		StarResponse starResponse = getStarInfo(user, episode);
+		int commentCount = commentRepository.countByEpisode(episode);
+
+		return EpisodeDetailResponse.from(commentCount, likeResponse, followResponse, starResponse);
+	}
+
+	private LikeResponse getLikeInfo(Long episodeId, User user) {
+		boolean isLike = likeRepository.existsByUserAndLikeTypeAndReferenceId(user, LikeType.EPISODE, episodeId);
+		int likeCount = likeRepository.countByLikeTypeAndReferenceId(LikeType.EPISODE, episodeId);
+
+		return LikeResponse.from(likeCount, isLike);
+	}
+
+	private FollowResponse getFollowInfo(User user, Comic comic) {
+		boolean isFollow = followRepository.existsByUserAndComic(user, comic);
+		int followCount = followRepository.countByComic(comic);
+
+		return FollowResponse.from(followCount, isFollow);
+	}
+
+	private StarResponse getStarInfo(User user, Episode episode) {
+		boolean isStar = starRepository.existsByUserAndEpisode(user, episode);
+		int starCount = starRepository.countByEpisode(episode);
+		double scoreAverage = starRepository.findAvgScoreByEpisode(episode)
+				.orElse(DEFAULT_STAR_AVG);
+
+		return StarResponse.from(starCount, scoreAverage, isStar);
 	}
 
 	private List<EpisodeListResponse> getEpisodeListResponses(List<Episode> episodes, User user) {
@@ -104,5 +153,10 @@ public class EpisodeReadService {
 
 	private List<EpisodeImage> getEpisodeImages(Episode episode) {
 		return episodeImageRepository.findByEpisode(episode);
+	}
+
+	private Episode getEpisodeWithComic(Long episodeId) {
+		return episodeRepository.findByIdWithComic(episodeId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.EPISODE_NOT_FOUND));
 	}
 }

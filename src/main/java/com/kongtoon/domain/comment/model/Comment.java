@@ -41,9 +41,6 @@ public class Comment extends BaseEntity {
 	@Column(name = "parent_id", nullable = true)
 	private Long parentId;
 
-	@Column(name = "like_count", nullable = false)
-	private int likeCount;
-
 	@Column(name = "visible", nullable = false)
 	private boolean visible;
 
@@ -59,7 +56,6 @@ public class Comment extends BaseEntity {
 	private Episode episode;
 
 	public Comment(String content, Long parentId, User user, Episode episode) {
-		this.likeCount = 0;
 		this.visible = true;
 		this.content = content;
 		this.parentId = parentId;

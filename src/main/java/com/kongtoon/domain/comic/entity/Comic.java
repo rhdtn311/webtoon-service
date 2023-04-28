@@ -50,9 +50,6 @@ public class Comic extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private PublishDayOfWeek publishDayOfWeek;
 
-	@Column(name = "follower_count", nullable = false)
-	private int followerCount;
-
 	@Column(name = "isComplete", nullable = false)
 	private boolean isComplete;
 
@@ -65,7 +62,6 @@ public class Comic extends BaseEntity {
 
 	public Comic(String name, Genre genre, String summary, PublishDayOfWeek publishDayOfWeek, Author author) {
 		this.isComplete = false;
-		this.followerCount = 0;
 		this.name = name;
 		this.genre = genre;
 		this.summary = summary;

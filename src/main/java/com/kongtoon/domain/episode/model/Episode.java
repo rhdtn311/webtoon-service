@@ -43,9 +43,6 @@ public class Episode extends BaseEntity {
 	@Column(name = "thumbnail_url", length = 2048, nullable = false)
 	private String thumbnailUrl;
 
-	@Column(name = "like_count", nullable = false)
-	private int likeCount;
-
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
 
@@ -53,12 +50,10 @@ public class Episode extends BaseEntity {
 	@JoinColumn(name = "comic_id", nullable = false)
 	private Comic comic;
 
-	public Episode(String title, int episodeNumber, String thumbnailUrl, int likeCount,
-			Comic comic) {
+	public Episode(String title, int episodeNumber, String thumbnailUrl, Comic comic) {
 		this.title = title;
 		this.episodeNumber = episodeNumber;
 		this.thumbnailUrl = thumbnailUrl;
-		this.likeCount = likeCount;
 		this.comic = comic;
 	}
 

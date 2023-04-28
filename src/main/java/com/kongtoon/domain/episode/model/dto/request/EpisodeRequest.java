@@ -62,7 +62,6 @@ public class EpisodeRequest {
 				this.title,
 				episodeNumber,
 				thumbnailImageUrl,
-				0,
 				comic
 		);
 	}

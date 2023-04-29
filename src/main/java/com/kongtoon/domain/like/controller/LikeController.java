@@ -1,6 +1,7 @@
 package com.kongtoon.domain.like.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,4 +33,14 @@ public class LikeController {
 		return ResponseEntity.ok(likeResponse);
 	}
 
+	@LoginCheck(authority = UserAuthority.USER)
+	@DeleteMapping("/episodes/{episodeId}/like")
+	public ResponseEntity<LikeResponse> deleteEpisodeLike(
+			@PathVariable Long episodeId,
+			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+	) {
+		LikeResponse likeResponse = likeService.deleteEpisodeLike(episodeId, userAuth.loginId());
+
+		return ResponseEntity.ok(likeResponse);
+	}
 }

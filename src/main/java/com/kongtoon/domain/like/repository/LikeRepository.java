@@ -1,5 +1,7 @@
 package com.kongtoon.domain.like.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.kongtoon.domain.like.model.Like;
@@ -11,4 +13,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 	boolean existsByUserAndLikeTypeAndReferenceId(User user, LikeType likeType, Long referenceId);
 
 	int countByLikeTypeAndReferenceId(LikeType likeType, Long referenceId);
+
+	Optional<Like> findByUserAndLikeTypeAndReferenceId(User user, LikeType likeType, Long referenceId);
 }

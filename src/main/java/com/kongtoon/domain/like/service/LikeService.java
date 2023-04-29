@@ -27,6 +27,7 @@ public class LikeService {
 	public LikeResponse createEpisodeLike(Long episodeId, String loginId) {
 		User user = getUser(loginId);
 
+		verityExistsEpisode(episodeId);
 		verifyExistsLike(user, episodeId);
 
 		Like like = new Like(LikeType.EPISODE, episodeId, user);
@@ -35,6 +36,24 @@ public class LikeService {
 		int likeCount = getLikeCountByEpisodeId(episodeId);
 
 		return LikeResponse.from(likeCount, true);
+	}
+
+	@Transactional
+	public LikeResponse deleteEpisodeLike(Long episodeId, String loginId) {
+		User user = getUser(loginId);
+
+		likeRepository.findByUserAndLikeTypeAndReferenceId(user, LikeType.EPISODE, episodeId)
+				.ifPresent(likeRepository::delete);
+
+		int likeCount = getLikeCountByEpisodeId(episodeId);
+
+		return LikeResponse.from(likeCount, false);
+	}
+
+	private void verityExistsEpisode(Long episodeId) {
+		if (!episodeRepository.existsById(episodeId)) {
+			throw new BusinessException(ErrorCode.EPISODE_NOT_FOUND);
+		}
 	}
 
 	private int getLikeCountByEpisodeId(Long episodeId) {

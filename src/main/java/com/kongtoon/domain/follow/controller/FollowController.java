@@ -5,6 +5,7 @@ import java.net.URI;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,5 +37,16 @@ public class FollowController {
 		return ResponseEntity
 				.created(URI.create(httpServletRequest.getRequestURI() + "/" + savedFollowId))
 				.build();
+	}
+
+	@LoginCheck(authority = UserAuthority.USER)
+	@DeleteMapping("/comics/{comicId}/follow")
+	public ResponseEntity<Void> unFollow(
+			@PathVariable Long comicId,
+			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+	) {
+		followService.deleteFollow(comicId, userAuth.loginId());
+
+		return ResponseEntity.noContent().build();
 	}
 }

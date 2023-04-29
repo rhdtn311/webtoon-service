@@ -1,5 +1,7 @@
 package com.kongtoon.domain.follow.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,14 @@ public class FollowService {
 		return follow.getId();
 	}
 
+	@Transactional
+	public void deleteFollow(Long comicId, String loginId) {
+		User user = getUser(loginId);
+		Comic comic = getComic(comicId);
+
+		getFollow(user, comic).ifPresent(followRepository::delete);
+	}
+
 	private void validateExistsFollow(User user, Comic comic) {
 		if (followRepository.existsByUserAndComic(user, comic)) {
 			throw new BusinessException(ErrorCode.DUPLICATE_FOLLOW);
@@ -54,5 +64,9 @@ public class FollowService {
 	private Comic getComic(Long comicId) {
 		return comicRepository.findById(comicId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.COMIC_NOT_FOUND));
+	}
+
+	private Optional<Follow> getFollow(User user, Comic comic) {
+		return followRepository.findByUserAndComic(user, comic);
 	}
 }

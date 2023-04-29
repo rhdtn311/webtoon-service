@@ -5,6 +5,7 @@ import static com.kongtoon.domain.episode.model.dto.response.EpisodeResponse.*;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import com.kongtoon.domain.view.model.View;
 import com.kongtoon.domain.view.repository.ViewRepository;
+import com.kongtoon.domain.view.service.event.EpisodeViewedEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -53,6 +55,8 @@ public class EpisodeReadService {
 	private final FollowRepository followRepository;
 	private final StarRepository starRepository;
 	private final CommentRepository commentRepository;
+
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional(readOnly = true)
 	public EpisodeListResponses getEpisodes(Long comicId, String loginId) {
@@ -90,6 +94,8 @@ public class EpisodeReadService {
 		FollowResponse followResponse = getFollowInfo(user, comic);
 		StarResponse starResponse = getStarInfo(user, episode);
 		int commentCount = commentRepository.countByEpisode(episode);
+
+		applicationEventPublisher.publishEvent(new EpisodeViewedEvent(user, episode));
 
 		return EpisodeDetailResponse.from(commentCount, likeResponse, followResponse, starResponse);
 	}

@@ -21,6 +21,8 @@ public enum ErrorCode {
 
 	EPISODE_NOT_FOUND("존재하지 않는 에피소드입니다.", 404),
 
+	DUPLICATE_FOLLOW("이미 팔로우 하고 있는 웹툰입니다.", 409),
+
 	FILE_NOT_UPLOAD("파일 업로드에 실패했습니다.", 409),
 	FILE_NOT_DELETE("파일 삭제에 실패했습니다.", 409),
 	NOT_ALLOWED_EXTENSION("허용된 확장자가 아닙니다.", 409);

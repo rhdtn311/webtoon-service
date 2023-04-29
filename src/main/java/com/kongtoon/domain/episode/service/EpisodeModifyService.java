@@ -14,7 +14,7 @@ import com.kongtoon.common.aws.event.FileDeleteAfterCommitEvent;
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.domain.author.model.Author;
-import com.kongtoon.domain.comic.entity.Comic;
+import com.kongtoon.domain.comic.model.Comic;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.episode.model.EpisodeImage;

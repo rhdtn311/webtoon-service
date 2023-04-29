@@ -1,4 +1,4 @@
-package com.kongtoon.domain.comic.entity.validation;
+package com.kongtoon.domain.comic.model.validation;
 
 import java.util.List;
 import java.util.Map;
@@ -9,9 +9,9 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.stereotype.Component;
 
-import com.kongtoon.domain.comic.entity.ThumbnailType;
-import com.kongtoon.domain.comic.entity.dto.request.ComicRequest;
-import com.kongtoon.domain.comic.entity.dto.request.ComicRequest.ThumbnailRequest;
+import com.kongtoon.domain.comic.model.ThumbnailType;
+import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
+import com.kongtoon.domain.comic.model.dto.request.ComicRequest.ThumbnailRequest;
 
 @Component
 public class ComicRequestValidator implements ConstraintValidator<ComicRequestValid, ComicRequest> {

@@ -1,4 +1,4 @@
-package com.kongtoon.domain.comic.entity.validation;
+package com.kongtoon.domain.comic.model.validation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

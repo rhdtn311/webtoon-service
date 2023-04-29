@@ -1,4 +1,4 @@
-package com.kongtoon.domain.comic.entity.dto.request;
+package com.kongtoon.domain.comic.model.dto.request;
 
 import java.util.List;
 
@@ -11,12 +11,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kongtoon.common.validation.NotEmptyFile;
 import com.kongtoon.domain.author.model.Author;
-import com.kongtoon.domain.comic.entity.Comic;
-import com.kongtoon.domain.comic.entity.Genre;
-import com.kongtoon.domain.comic.entity.PublishDayOfWeek;
-import com.kongtoon.domain.comic.entity.Thumbnail;
-import com.kongtoon.domain.comic.entity.ThumbnailType;
-import com.kongtoon.domain.comic.entity.validation.ComicRequestValid;
+import com.kongtoon.domain.comic.model.Comic;
+import com.kongtoon.domain.comic.model.Genre;
+import com.kongtoon.domain.comic.model.PublishDayOfWeek;
+import com.kongtoon.domain.comic.model.Thumbnail;
+import com.kongtoon.domain.comic.model.ThumbnailType;
+import com.kongtoon.domain.comic.model.validation.ComicRequestValid;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

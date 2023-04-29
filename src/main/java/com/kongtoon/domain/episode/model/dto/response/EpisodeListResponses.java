@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.kongtoon.domain.comic.entity.Comic;
-import com.kongtoon.domain.comic.entity.PublishDayOfWeek;
+import com.kongtoon.domain.comic.model.Comic;
+import com.kongtoon.domain.comic.model.PublishDayOfWeek;
 import com.kongtoon.domain.episode.model.Episode;
 
 public record EpisodeListResponses(

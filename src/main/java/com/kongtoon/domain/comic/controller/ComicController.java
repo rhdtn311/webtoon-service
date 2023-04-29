@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.kongtoon.common.security.annotation.LoginCheck;
 import com.kongtoon.common.session.UserSessionUtil;
-import com.kongtoon.domain.comic.entity.dto.request.ComicRequest;
+import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.service.ComicService;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.model.UserAuthority;

@@ -1,4 +1,4 @@
-package com.kongtoon.domain.comic.entity;
+package com.kongtoon.domain.comic.model;
 
 public enum ThumbnailType {
 	SMALL, MAIN;

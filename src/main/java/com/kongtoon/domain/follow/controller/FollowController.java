@@ -1,9 +1,5 @@
 package com.kongtoon.domain.follow.controller;
 
-import java.net.URI;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +9,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.kongtoon.common.security.annotation.LoginCheck;
 import com.kongtoon.common.session.UserSessionUtil;
+import com.kongtoon.domain.follow.model.dto.response.FollowResponse;
 import com.kongtoon.domain.follow.service.FollowService;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.model.UserAuthority;
@@ -27,26 +24,23 @@ public class FollowController {
 
 	@LoginCheck(authority = UserAuthority.USER)
 	@PostMapping("/comics/{comicId}/follow")
-	public ResponseEntity<Void> follow(
+	public ResponseEntity<FollowResponse> follow(
 			@PathVariable Long comicId,
-			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth,
-			HttpServletRequest httpServletRequest
+			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
 	) {
-		Long savedFollowId = followService.createFollow(comicId, userAuth.loginId());
+		FollowResponse followResponse = followService.createFollow(comicId, userAuth.loginId());
 
-		return ResponseEntity
-				.created(URI.create(httpServletRequest.getRequestURI() + "/" + savedFollowId))
-				.build();
+		return ResponseEntity.ok(followResponse);
 	}
 
 	@LoginCheck(authority = UserAuthority.USER)
 	@DeleteMapping("/comics/{comicId}/follow")
-	public ResponseEntity<Void> unFollow(
+	public ResponseEntity<FollowResponse> unFollow(
 			@PathVariable Long comicId,
 			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
 	) {
-		followService.deleteFollow(comicId, userAuth.loginId());
+		FollowResponse followResponse = followService.deleteFollow(comicId, userAuth.loginId());
 
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.ok(followResponse);
 	}
 }

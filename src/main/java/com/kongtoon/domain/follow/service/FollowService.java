@@ -10,6 +10,7 @@ import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.domain.comic.entity.Comic;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.follow.model.Follow;
+import com.kongtoon.domain.follow.model.dto.response.FollowResponse;
 import com.kongtoon.domain.follow.repository.FollowRepository;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
@@ -25,7 +26,7 @@ public class FollowService {
 	private final UserRepository userRepository;
 
 	@Transactional
-	public Long createFollow(Long comicId, String loginId) {
+	public FollowResponse createFollow(Long comicId, String loginId) {
 		User user = getUser(loginId);
 		Comic comic = getComic(comicId);
 
@@ -35,15 +36,25 @@ public class FollowService {
 
 		followRepository.save(follow);
 
-		return follow.getId();
+		int followCount = countFollowByComic(comic);
+
+		return FollowResponse.from(followCount, true);
+	}
+
+	private int countFollowByComic(Comic comic) {
+		return followRepository.countByComic(comic);
 	}
 
 	@Transactional
-	public void deleteFollow(Long comicId, String loginId) {
+	public FollowResponse deleteFollow(Long comicId, String loginId) {
 		User user = getUser(loginId);
 		Comic comic = getComic(comicId);
 
 		getFollow(user, comic).ifPresent(followRepository::delete);
+
+		int followCount = countFollowByComic(comic);
+
+		return FollowResponse.from(followCount, false);
 	}
 
 	private void validateExistsFollow(User user, Comic comic) {

@@ -44,4 +44,8 @@ public class Star extends BaseEntity {
 		this.user = user;
 		this.episode = episode;
 	}
+
+	public void updateScore(int score) {
+		this.score = score;
+	}
 }

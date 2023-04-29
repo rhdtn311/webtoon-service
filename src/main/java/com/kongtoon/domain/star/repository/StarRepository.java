@@ -17,4 +17,6 @@ public interface StarRepository extends JpaRepository<Star, Long> {
 
 	@Query("SELECT avg(s.score) FROM Star s WHERE s.episode = :episode")
 	Optional<Double> findAvgScoreByEpisode(Episode episode);
+
+	Optional<Star> findByUserAndEpisode(User user, Episode episode);
 }

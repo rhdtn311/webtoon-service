@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ComicService {
+public class ComicModifyService {
 
 	private final ComicRepository comicRepository;
 	private final UserRepository userRepository;

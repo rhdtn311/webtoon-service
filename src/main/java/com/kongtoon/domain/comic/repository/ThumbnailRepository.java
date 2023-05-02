@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.kongtoon.domain.comic.entity.Comic;
-import com.kongtoon.domain.comic.entity.Thumbnail;
-import com.kongtoon.domain.comic.entity.ThumbnailType;
+import com.kongtoon.domain.comic.model.Comic;
+import com.kongtoon.domain.comic.model.Thumbnail;
+import com.kongtoon.domain.comic.model.ThumbnailType;
 
 public interface ThumbnailRepository extends JpaRepository<Thumbnail, Long> {
 

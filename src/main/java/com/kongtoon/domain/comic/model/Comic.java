@@ -1,4 +1,4 @@
-package com.kongtoon.domain.comic.entity;
+package com.kongtoon.domain.comic.model;
 
 import java.time.LocalDateTime;
 
@@ -50,7 +50,7 @@ public class Comic extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private PublishDayOfWeek publishDayOfWeek;
 
-	@Column(name = "isComplete", nullable = false)
+	@Column(name = "is_complete", nullable = false)
 	private boolean isComplete;
 
 	@Column(name = "deleted_at", nullable = true)

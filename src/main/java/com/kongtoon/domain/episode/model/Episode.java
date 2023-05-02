@@ -16,7 +16,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import com.kongtoon.domain.BaseEntity;
-import com.kongtoon.domain.comic.entity.Comic;
+import com.kongtoon.domain.comic.model.Comic;
 
 import lombok.AccessLevel;
 import lombok.Getter;

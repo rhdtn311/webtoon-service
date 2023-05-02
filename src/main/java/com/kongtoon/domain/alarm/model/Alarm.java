@@ -16,7 +16,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 
-import com.kongtoon.domain.comic.entity.Comic;
+import com.kongtoon.domain.comic.model.Comic;
 import com.kongtoon.domain.user.model.User;
 
 import lombok.AccessLevel;

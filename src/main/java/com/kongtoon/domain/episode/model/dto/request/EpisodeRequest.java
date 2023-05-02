@@ -11,7 +11,7 @@ import org.hibernate.validator.constraints.Length;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kongtoon.common.validation.NotEmptyFile;
-import com.kongtoon.domain.comic.entity.Comic;
+import com.kongtoon.domain.comic.model.Comic;
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.episode.model.EpisodeImage;
 import com.kongtoon.domain.episode.model.validation.EpisodeRequestValid;

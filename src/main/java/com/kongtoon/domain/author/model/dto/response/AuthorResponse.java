@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.kongtoon.domain.author.model.Author;
-import com.kongtoon.domain.comic.entity.Comic;
+import com.kongtoon.domain.comic.model.Comic;
 
 public record AuthorResponse(
 		String authorName,

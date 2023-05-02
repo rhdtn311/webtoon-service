@@ -15,10 +15,10 @@ import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.domain.author.model.Author;
 import com.kongtoon.domain.author.repository.AuthorRepository;
-import com.kongtoon.domain.comic.entity.Comic;
-import com.kongtoon.domain.comic.entity.Thumbnail;
-import com.kongtoon.domain.comic.entity.dto.request.ComicRequest;
-import com.kongtoon.domain.comic.entity.dto.request.ComicRequest.ThumbnailRequest;
+import com.kongtoon.domain.comic.model.Comic;
+import com.kongtoon.domain.comic.model.Thumbnail;
+import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
+import com.kongtoon.domain.comic.model.dto.request.ComicRequest.ThumbnailRequest;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
 import com.kongtoon.domain.user.model.User;
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ComicService {
+public class ComicModifyService {
 
 	private final ComicRepository comicRepository;
 	private final UserRepository userRepository;

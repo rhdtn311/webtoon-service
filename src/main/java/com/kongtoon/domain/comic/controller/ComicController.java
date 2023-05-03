@@ -22,6 +22,7 @@ import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.comic.model.Genre;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
+import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
 import com.kongtoon.domain.comic.service.ComicModifyService;
 import com.kongtoon.domain.comic.service.ComicReadService;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
@@ -70,5 +71,16 @@ public class ComicController {
 		List<ComicByGenreResponse> comicByGenreResponses = comicReadService.getComicsByGenre(genre);
 
 		return ResponseEntity.ok(comicByGenreResponses);
+	}
+
+	@LoginCheck(authority = UserAuthority.USER)
+	@GetMapping("/recent")
+	public ResponseEntity<List<ComicByViewRecentResponse>> getComicsByViewRecent(
+			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+	) {
+		List<ComicByViewRecentResponse> comicsByViewRecentResponses = comicReadService.getComicsByViewRecent(
+				userAuth.userId());
+
+		return ResponseEntity.ok(comicsByViewRecentResponses);
 	}
 }

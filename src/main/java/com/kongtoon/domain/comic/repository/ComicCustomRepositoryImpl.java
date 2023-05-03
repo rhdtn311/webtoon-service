@@ -5,11 +5,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.kongtoon.domain.author.model.QAuthor;
 import com.kongtoon.domain.comic.model.Genre;
 import com.kongtoon.domain.comic.model.QComic;
 import com.kongtoon.domain.comic.model.QThumbnail;
 import com.kongtoon.domain.comic.model.ThumbnailType;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
+import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
 import com.kongtoon.domain.episode.model.QEpisode;
 import com.kongtoon.domain.view.model.QView;
 import com.querydsl.core.types.Projections;
@@ -29,8 +31,10 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	QComic comic = QComic.comic;
-	QThumbnail thumbnail = QThumbnail.thumbnail;
+	QAuthor author = QAuthor.author;
 	QView view = QView.view;
+	QThumbnail thumbnail = QThumbnail.thumbnail;
+
 	QEpisode episode = new QEpisode("episode");
 	QEpisode subEpisode = new QEpisode("sub_episode");
 
@@ -66,12 +70,36 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 				.fetch();
 	}
 
+	@Override
+	public List<ComicByViewRecentResponse> findComicsByViewRecent(Long userId) {
+		return jpaQueryFactory.select(
+						Projections.constructor(
+								ComicByViewRecentResponse.class,
+								comic.id, comic.name, comic.author.authorName, thumbnail.imageUrl
+						)
+				)
+				.from(view)
+				.join(view.episode, episode)
+				.join(episode.comic, comic)
+				.join(comic.author, author)
+				.join(thumbnail).on(comic.eq(thumbnail.comic), isSameThumbnailType(ThumbnailType.SMALL))
+				.where(isSameUser(userId))
+				.groupBy(comic.id, thumbnail.imageUrl)
+				.orderBy(view.lastAccessTime.max().desc())
+				.limit(10)
+				.fetch();
+	}
+
 	private BooleanExpression isSameGenre(Genre genre) {
 		return comic.genre.eq(genre);
 	}
 
 	private BooleanExpression isSameThumbnailType(ThumbnailType thumbnailType) {
 		return thumbnail.thumbnailType.eq(thumbnailType);
+	}
+
+	private BooleanExpression isSameUser(Long userId) {
+		return view.user.id.eq(userId);
 	}
 
 	private NumberExpression<Integer> getOrderByComicCreatedAt() {

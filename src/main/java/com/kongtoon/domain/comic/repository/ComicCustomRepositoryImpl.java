@@ -45,26 +45,15 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 		return jpaQueryFactory.select(
 						Projections.constructor(
 								ComicByGenreResponse.class,
-								comic.id, comic.name, comic.author.authorName, thumbnail.imageUrl, isNewComic()
+								comic.id, comic.name, author.authorName, thumbnail.imageUrl, isNewComic()
 						)
 				)
 				.from(comic)
-				.leftJoin(episode)
-				.on(episode.comic.eq(comic),
-						episode.episodeNumber.eq(
-								findLastEpisodes()
-						)
-				)
-				.leftJoin(view)
-				.on(view.episode.eq(episode))
-				.leftJoin(thumbnail)
-				.on(thumbnail.comic.eq(comic))
-				.where(
-						isSameGenre(genre)
-								.and(
-										isSameThumbnailType(ThumbnailType.MAIN)
-								)
-				)
+				.leftJoin(episode).on(episode.comic.eq(comic), episode.episodeNumber.eq(findLastEpisodes()))
+				.leftJoin(view).on(view.episode.eq(episode))
+				.leftJoin(thumbnail).on(comic.eq(thumbnail.comic), isSameThumbnailType(ThumbnailType.MAIN))
+				.join(author).on(author.eq(comic.author))
+				.where(isSameGenre(genre))
 				.groupBy(comic.id, thumbnail.imageUrl)
 				.orderBy(orderByComicCreatedAt.asc(), view.id.count().desc())
 				.fetch();

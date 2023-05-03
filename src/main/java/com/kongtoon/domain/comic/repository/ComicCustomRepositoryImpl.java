@@ -11,6 +11,7 @@ import com.kongtoon.domain.comic.model.QComic;
 import com.kongtoon.domain.comic.model.QThumbnail;
 import com.kongtoon.domain.comic.model.ThumbnailType;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
+import com.kongtoon.domain.comic.model.dto.response.ComicByNewResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
 import com.kongtoon.domain.episode.model.QEpisode;
 import com.kongtoon.domain.view.model.QView;
@@ -64,7 +65,7 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 		return jpaQueryFactory.select(
 						Projections.constructor(
 								ComicByViewRecentResponse.class,
-								comic.id, comic.name, comic.author.authorName, thumbnail.imageUrl
+								comic.id, comic.name, author.authorName, thumbnail.imageUrl
 						)
 				)
 				.from(view)
@@ -76,6 +77,23 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 				.groupBy(comic.id, thumbnail.imageUrl)
 				.orderBy(view.lastAccessTime.max().desc())
 				.limit(10)
+				.fetch();
+	}
+
+	@Override
+	public List<ComicByNewResponse> findComicsByNew() {
+
+		return jpaQueryFactory.select(
+						Projections.constructor(
+								ComicByNewResponse.class,
+								comic.id, comic.name, author.authorName, thumbnail.imageUrl, episode.id
+						)
+				).from(comic)
+				.join(episode).on(comic.eq(episode.comic), episode.episodeNumber.eq(findLastEpisodes()))
+				.join(comic.author, author)
+				.join(thumbnail).on(comic.eq(thumbnail.comic), isSameThumbnailType(ThumbnailType.SMALL))
+				.where(isNewEpisode())
+				.orderBy(episode.createdAt.desc())
 				.fetch();
 	}
 
@@ -102,6 +120,12 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 		LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
 
 		return comic.createdAt.after(threeDaysAgo);
+	}
+
+	private BooleanExpression isNewEpisode() {
+		LocalDateTime twoDaysAgo = LocalDateTime.now().minusDays(2);
+
+		return episode.createdAt.after(twoDaysAgo);
 	}
 
 	private JPQLQuery<Integer> findLastEpisodes() {

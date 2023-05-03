@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kongtoon.domain.comic.model.Genre;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
+import com.kongtoon.domain.comic.model.dto.response.ComicByNewResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 
@@ -28,5 +29,11 @@ public class ComicReadService {
 	public List<ComicByViewRecentResponse> getComicsByViewRecent(Long userId) {
 
 		return comicRepository.findComicsByViewRecent(userId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<ComicByNewResponse> getComicsByNew() {
+
+		return comicRepository.findComicsByNew();
 	}
 }

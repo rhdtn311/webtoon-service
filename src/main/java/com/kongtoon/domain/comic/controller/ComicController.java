@@ -23,6 +23,7 @@ import com.kongtoon.domain.comic.model.Genre;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByNewResponse;
+import com.kongtoon.domain.comic.model.dto.response.ComicByRealtimeRankingResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
 import com.kongtoon.domain.comic.service.ComicModifyService;
 import com.kongtoon.domain.comic.service.ComicReadService;
@@ -91,5 +92,13 @@ public class ComicController {
 		List<ComicByNewResponse> comicsByViewRecentResponses = comicReadService.getComicsByNew();
 
 		return ResponseEntity.ok(comicsByViewRecentResponses);
+	}
+
+	@LoginCheck(authority = UserAuthority.USER)
+	@GetMapping("/real-time/ranking")
+	public ResponseEntity<List<ComicByRealtimeRankingResponse>> getComicsByRealtimeRanking() {
+		List<ComicByRealtimeRankingResponse> comicsByRealtimeRankingResponses = comicReadService.getComicsByRealtimeRanking();
+
+		return ResponseEntity.ok(comicsByRealtimeRankingResponses);
 	}
 }

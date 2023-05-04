@@ -1,6 +1,8 @@
 package com.kongtoon.domain.comic.repository;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -12,9 +14,12 @@ import com.kongtoon.domain.comic.model.QThumbnail;
 import com.kongtoon.domain.comic.model.ThumbnailType;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByNewResponse;
+import com.kongtoon.domain.comic.model.dto.response.ComicByRealtimeRankingResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
+import com.kongtoon.domain.comic.model.dto.response.vo.TwoHourSlice;
 import com.kongtoon.domain.episode.model.QEpisode;
 import com.kongtoon.domain.view.model.QView;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -95,6 +100,54 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 				.where(isNewEpisode())
 				.orderBy(episode.createdAt.desc())
 				.fetch();
+	}
+
+	@Override
+	public List<ComicByRealtimeRankingResponse> findComicsByRealtimeRanking() {
+
+		List<Tuple> resultSet = jpaQueryFactory.select(comic.id, comic.name, author.authorName, thumbnail.imageUrl,
+						view.id.count())
+				.from(view)
+				.leftJoin(view.episode, episode)
+				.join(episode.comic, comic)
+				.leftJoin(comic.author, author)
+				.leftJoin(thumbnail).on(comic.eq(thumbnail.comic), isSameThumbnailType(ThumbnailType.SMALL))
+				.where(isBetweenTime())
+				.groupBy(comic.id, thumbnail.imageUrl)
+				.orderBy(view.id.count().desc())
+				.limit(10)
+				.fetch();
+
+		return getComicByRealtimeRankingResponses(resultSet);
+	}
+
+	private List<ComicByRealtimeRankingResponse> getComicByRealtimeRankingResponses(List<Tuple> resultSet) {
+
+		int rank = 1;
+		List<ComicByRealtimeRankingResponse> comicByRealtimeRankingResponses = new ArrayList<>();
+
+		for (Tuple tuple : resultSet) {
+			Long comicId = tuple.get(comic.id);
+			String comicName = tuple.get(comic.name);
+			String authorName = tuple.get(author.authorName);
+			String thumbnailUrl = tuple.get(thumbnail.imageUrl);
+			Long viewCount = tuple.get(view.id.count());
+
+			comicByRealtimeRankingResponses.add(
+					ComicByRealtimeRankingResponse.from(comicId, rank++, comicName, authorName, thumbnailUrl, viewCount));
+		}
+
+		return comicByRealtimeRankingResponses;
+	}
+
+	private BooleanExpression isBetweenTime() {
+
+		TwoHourSlice twoHourSlice = TwoHourSlice.findBeforeTimeSlice(LocalTime.now());
+
+		return view.lastAccessTime.between(
+				twoHourSlice.getStartTime().atDate(twoHourSlice.getBeforeDate()),
+				twoHourSlice.getEndTime().atDate(twoHourSlice.getBeforeDate())
+		);
 	}
 
 	private BooleanExpression isSameGenre(Genre genre) {

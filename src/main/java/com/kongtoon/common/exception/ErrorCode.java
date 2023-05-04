@@ -27,7 +27,9 @@ public enum ErrorCode {
 
 	FILE_NOT_UPLOAD("파일 업로드에 실패했습니다.", 409),
 	FILE_NOT_DELETE("파일 삭제에 실패했습니다.", 409),
-	NOT_ALLOWED_EXTENSION("허용된 확장자가 아닙니다.", 409);
+	NOT_ALLOWED_EXTENSION("허용된 확장자가 아닙니다.", 409),
+
+	INCORRECT_TIME("유효하지 않는 시간입니다.", 409);
 
 	private final String message;
 	private final int status;

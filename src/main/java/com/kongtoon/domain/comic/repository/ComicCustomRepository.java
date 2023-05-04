@@ -5,6 +5,7 @@ import java.util.List;
 import com.kongtoon.domain.comic.model.Genre;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByNewResponse;
+import com.kongtoon.domain.comic.model.dto.response.ComicByRealtimeRankingResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
 
 public interface ComicCustomRepository {
@@ -14,4 +15,6 @@ public interface ComicCustomRepository {
 	List<ComicByViewRecentResponse> findComicsByViewRecent(Long userId);
 
 	List<ComicByNewResponse> findComicsByNew();
+
+	List<ComicByRealtimeRankingResponse> findComicsByRealtimeRanking();
 }

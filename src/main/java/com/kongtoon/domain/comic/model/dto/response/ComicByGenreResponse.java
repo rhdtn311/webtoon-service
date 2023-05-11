@@ -5,6 +5,7 @@ public record ComicByGenreResponse(
 		String name,
 		String author,
 		String thumbnailUrl,
-		boolean isNew
+		boolean isNew,
+		long viewCount
 ) {
 }

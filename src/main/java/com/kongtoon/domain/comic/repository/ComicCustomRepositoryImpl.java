@@ -23,6 +23,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -51,14 +52,21 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 		return jpaQueryFactory.select(
 						Projections.constructor(
 								ComicByGenreResponse.class,
-								comic.id, comic.name, author.authorName, thumbnail.imageUrl, isNewComic()
+								comic.id, comic.name, author.authorName, thumbnail.imageUrl, isNewComic(), view.id.count()
 						)
 				)
 				.from(comic)
-				.leftJoin(episode).on(episode.comic.eq(comic), episode.episodeNumber.eq(findLastEpisodes()))
-				.leftJoin(view).on(view.episode.eq(episode))
-				.leftJoin(thumbnail).on(comic.eq(thumbnail.comic), isSameThumbnailType(ThumbnailType.MAIN))
-				.join(author).on(author.eq(comic.author))
+				.leftJoin(episode)
+				.on(
+						episode.comic.eq(comic),
+						Expressions.list(episode.comic.id, episode.episodeNumber).in(findLastEpisodesGroupByComic())
+				)
+				.leftJoin(view)
+				.on(view.episode.eq(episode))
+				.leftJoin(thumbnail)
+				.on(comic.eq(thumbnail.comic), isSameThumbnailType(ThumbnailType.MAIN))
+				.join(author)
+				.on(author.eq(comic.author))
 				.where(isSameGenre(genre))
 				.groupBy(comic.id, thumbnail.imageUrl)
 				.orderBy(orderByComicCreatedAt.asc(), view.id.count().desc())
@@ -186,6 +194,12 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 		return JPAExpressions.select(subEpisode.episodeNumber.max())
 				.from(subEpisode)
 				.where(subEpisode.comic.eq(comic));
+	}
+
+	private JPQLQuery<Tuple> findLastEpisodesGroupByComic() {
+		return JPAExpressions.select(subEpisode.comic.id, subEpisode.episodeNumber.max())
+				.from(subEpisode)
+				.groupBy(subEpisode.comic.id);
 	}
 }
 

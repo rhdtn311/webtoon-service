@@ -1,16 +1,19 @@
 package com.kongtoon.domain.comic.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
 import com.kongtoon.domain.author.model.QAuthor;
+import com.kongtoon.domain.comic.model.Comic;
 import com.kongtoon.domain.comic.model.Genre;
 import com.kongtoon.domain.comic.model.QComic;
+import com.kongtoon.domain.comic.model.QRealtimeComicRanking;
 import com.kongtoon.domain.comic.model.QThumbnail;
+import com.kongtoon.domain.comic.model.RealtimeComicRanking;
 import com.kongtoon.domain.comic.model.ThumbnailType;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByNewResponse;
@@ -41,6 +44,7 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 	QAuthor author = QAuthor.author;
 	QView view = QView.view;
 	QThumbnail thumbnail = QThumbnail.thumbnail;
+	QRealtimeComicRanking realtimeComicRanking = QRealtimeComicRanking.realtimeComicRanking;
 
 	QEpisode episode = new QEpisode("episode");
 	QEpisode subEpisode = new QEpisode("sub_episode");
@@ -111,50 +115,70 @@ public class ComicCustomRepositoryImpl implements ComicCustomRepository {
 	}
 
 	@Override
-	public List<ComicByRealtimeRankingResponse> findComicsByRealtimeRanking() {
+	public List<RealtimeComicRanking> findRealtimeComicRankingForSave(LocalDate recordDate, TwoHourSlice recordTime) {
 
-		List<Tuple> resultSet = jpaQueryFactory.select(comic.id, comic.name, author.authorName, thumbnail.imageUrl,
-						view.id.count())
+		List<Tuple> resultSet = jpaQueryFactory.select(comic, view.id.count())
 				.from(view)
 				.leftJoin(view.episode, episode)
 				.join(episode.comic, comic)
-				.leftJoin(comic.author, author)
-				.leftJoin(thumbnail).on(comic.eq(thumbnail.comic), isSameThumbnailType(ThumbnailType.SMALL))
-				.where(isBetweenTime())
-				.groupBy(comic.id, thumbnail.imageUrl)
+				.where(isBetweenTime(recordDate, recordTime))
+				.groupBy(comic.id)
 				.orderBy(view.id.count().desc())
 				.limit(10)
 				.fetch();
 
-		return getComicByRealtimeRankingResponses(resultSet);
+		return toRealtimeComicRankings(resultSet, recordDate, recordTime);
 	}
 
-	private List<ComicByRealtimeRankingResponse> getComicByRealtimeRankingResponses(List<Tuple> resultSet) {
+	@Override
+	public List<ComicByRealtimeRankingResponse> findComicsByRealtimeRanking(
+			LocalDate recordDate,
+			TwoHourSlice recordTime
+	) {
+		return jpaQueryFactory.select(
+						Projections.constructor(
+								ComicByRealtimeRankingResponse.class,
+								comic.id, realtimeComicRanking.rank, comic.name, author.authorName, thumbnail.imageUrl,
+								realtimeComicRanking.views)
+				)
+				.from(realtimeComicRanking)
+				.join(realtimeComicRanking.comic, comic)
+				.join(comic.author, author)
+				.leftJoin(thumbnail).on(comic.eq(thumbnail.comic), isSameThumbnailType(ThumbnailType.SMALL))
+				.where(isSameRecordDateAndRecordTime(recordDate, recordTime))
+				.orderBy(realtimeComicRanking.rank.asc())
+				.fetch();
+	}
 
+	private BooleanExpression isSameRecordDateAndRecordTime(LocalDate recordDate, TwoHourSlice recordTime) {
+		return realtimeComicRanking.recordDate.eq(recordDate)
+				.and(realtimeComicRanking.recordTime.eq(recordTime));
+	}
+
+	private List<RealtimeComicRanking> toRealtimeComicRankings(
+			List<Tuple> resultSet,
+			LocalDate recordDate,
+			TwoHourSlice recordTime
+	) {
 		int rank = 1;
-		List<ComicByRealtimeRankingResponse> comicByRealtimeRankingResponses = new ArrayList<>();
+		List<RealtimeComicRanking> realtimeComicRankings = new ArrayList<>();
 
 		for (Tuple tuple : resultSet) {
-			Long comicId = tuple.get(comic.id);
-			String comicName = tuple.get(comic.name);
-			String authorName = tuple.get(author.authorName);
-			String thumbnailUrl = tuple.get(thumbnail.imageUrl);
-			Long viewCount = tuple.get(view.id.count());
+			Comic foundComic = tuple.get(comic);
+			Long views = tuple.get(view.id.count());
 
-			comicByRealtimeRankingResponses.add(
-					ComicByRealtimeRankingResponse.from(comicId, rank++, comicName, authorName, thumbnailUrl, viewCount));
+			realtimeComicRankings.add(
+					new RealtimeComicRanking(recordDate, recordTime, rank++, views, foundComic));
 		}
 
-		return comicByRealtimeRankingResponses;
+		return realtimeComicRankings;
 	}
 
-	private BooleanExpression isBetweenTime() {
-
-		TwoHourSlice twoHourSlice = TwoHourSlice.findBeforeTimeSlice(LocalTime.now());
+	private BooleanExpression isBetweenTime(LocalDate recordDate, TwoHourSlice recordTime) {
 
 		return view.lastAccessTime.between(
-				twoHourSlice.getStartTime().atDate(twoHourSlice.getBeforeDate()),
-				twoHourSlice.getEndTime().atDate(twoHourSlice.getBeforeDate())
+				recordTime.getStartTime().atDate(recordDate),
+				recordTime.getEndTime().atDate(recordDate)
 		);
 	}
 

@@ -1,5 +1,7 @@
 package com.kongtoon.domain.comic.service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByNewResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByRealtimeRankingResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
+import com.kongtoon.domain.comic.model.dto.response.vo.TwoHourSlice;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -40,7 +43,11 @@ public class ComicReadService {
 
 	@Transactional(readOnly = true)
 	public List<ComicByRealtimeRankingResponse> getComicsByRealtimeRanking() {
+		LocalTime now = LocalTime.now();
 
-		return comicRepository.findComicsByRealtimeRanking();
+		TwoHourSlice recordTime = TwoHourSlice.getPrev(now);
+		LocalDate recordDate = recordTime.getPrevSliceDate();
+
+		return comicRepository.findComicsByRealtimeRanking(recordDate, recordTime);
 	}
 }

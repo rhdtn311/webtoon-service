@@ -6,7 +6,7 @@ public record ComicByRealtimeRankingResponse(
 		String name,
 		String author,
 		String thumbnailUrl,
-		Long viewCount
+		Long views
 ) {
 	public static ComicByRealtimeRankingResponse from(
 			Long id,

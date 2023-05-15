@@ -2,6 +2,7 @@ package com.kongtoon.domain.comic.model.dto.response.vo;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
@@ -31,7 +32,14 @@ public enum TwoHourSlice {
 		this.endTime = endTime;
 	}
 
-	public static TwoHourSlice findBeforeTimeSlice(LocalTime now) {
+	public LocalDate getPrevSliceDate() {
+		if (this == HOUR_22_24) {
+			return LocalDate.now().minusDays(1);
+		}
+		return LocalDate.now();
+	}
+
+	public static TwoHourSlice getPrev(LocalTime now) {
 		for (int i = 0; i < values().length; i++) {
 			if (now.isAfter(values()[i].startTime) && now.isBefore(values()[i].endTime)) {
 				if (values()[i] == HOUR_00_02) {
@@ -44,10 +52,23 @@ public enum TwoHourSlice {
 		throw new BusinessException(ErrorCode.INCORRECT_TIME);
 	}
 
-	public LocalDate getBeforeDate() {
-		if (this == HOUR_22_24) {
-			return LocalDate.now().minusDays(1);
+	public static TwoHourSlice getNow(LocalTime now) {
+		return Arrays.stream(values())
+				.filter(slice -> slice.startTime.isBefore(now) && slice.endTime.isAfter(now))
+				.findFirst()
+				.orElseThrow(() -> new BusinessException(ErrorCode.INCORRECT_TIME));
+	}
+
+	public TwoHourSlice getNext() {
+		for (int i = 0; i < values().length; i++) {
+			if (values()[i] == this) {
+				if (values()[i] == HOUR_22_24) {
+					return HOUR_00_02;
+				}
+				return values()[i + 1];
+			}
 		}
-		return LocalDate.now();
+
+		throw new BusinessException(ErrorCode.INCORRECT_TIME);
 	}
 }

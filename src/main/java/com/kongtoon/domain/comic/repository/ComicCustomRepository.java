@@ -1,12 +1,15 @@
 package com.kongtoon.domain.comic.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.kongtoon.domain.comic.model.Genre;
+import com.kongtoon.domain.comic.model.RealtimeComicRanking;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByNewResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByRealtimeRankingResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByViewRecentResponse;
+import com.kongtoon.domain.comic.model.dto.response.vo.TwoHourSlice;
 
 public interface ComicCustomRepository {
 
@@ -16,5 +19,7 @@ public interface ComicCustomRepository {
 
 	List<ComicByNewResponse> findComicsByNew();
 
-	List<ComicByRealtimeRankingResponse> findComicsByRealtimeRanking();
+	List<RealtimeComicRanking> findRealtimeComicRankingForSave(LocalDate recordDate, TwoHourSlice recordTime);
+
+	List<ComicByRealtimeRankingResponse> findComicsByRealtimeRanking(LocalDate recordDate, TwoHourSlice recordTime);
 }

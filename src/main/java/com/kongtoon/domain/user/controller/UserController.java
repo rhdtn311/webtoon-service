@@ -61,7 +61,7 @@ public class UserController {
 		Long savedUserId = userService.signup(signupRequest);
 
 		return ResponseEntity
-				.created(URI.create(httpServletRequest.getRequestURI() + savedUserId))
+				.created(URI.create(httpServletRequest.getRequestURI() + "/" + savedUserId))
 				.build();
 	}
 

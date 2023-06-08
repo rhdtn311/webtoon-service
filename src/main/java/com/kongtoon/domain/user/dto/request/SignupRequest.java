@@ -1,12 +1,12 @@
 package com.kongtoon.domain.user.dto.request;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.Length;
 
 import com.kongtoon.common.constant.RegexConst;
+import com.kongtoon.common.validation.Email;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
 
@@ -18,8 +18,8 @@ public record SignupRequest(
 		@NotBlank
 		String name,
 
-		@NotBlank
 		@Email
+		@NotBlank
 		String email,
 
 		@NotBlank

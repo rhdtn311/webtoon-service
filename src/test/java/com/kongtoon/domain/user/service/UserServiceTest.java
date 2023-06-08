@@ -102,7 +102,7 @@ class UserServiceTest {
 		when(userRepository.existsByEmail(email))
 				.thenReturn(false);
 		when(userRepository.existsByLoginId(loginId))
-				.thenReturn(false);
+				.thenReturn(true);
 
 		// when, then
 		assertThatThrownBy(() -> userService.signup(signupRequest))

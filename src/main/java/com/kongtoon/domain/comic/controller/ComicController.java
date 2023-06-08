@@ -50,7 +50,7 @@ public class ComicController {
 		Long savedComicId = comicModifyService.createComic(comicRequest, userAuth.loginId());
 
 		return ResponseEntity
-				.created(URI.create(httpServletRequest.getRequestURI() + savedComicId))
+				.created(URI.create(httpServletRequest.getRequestURI() + "/" + savedComicId))
 				.build();
 	}
 

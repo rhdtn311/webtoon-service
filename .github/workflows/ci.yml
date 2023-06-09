@@ -1,0 +1,29 @@
+name: CI
+on: 
+  push: 
+  pull_request: 
+    branches: "develop"
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: pull code
+        uses: actions/checkout@v3
+        
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+        
+      - name: add setting file
+        run: | 
+          echo "${{secrets.APPLICATION_DB}}" >> ./src/main/resources/application-db.yml
+          echo "${{secrets.APPLICATION_AWS}}" >> ./src/main/resources/application-aws.yml
+          
+      - name: Get execution permission to gradlew
+        run: chmod +x ./gradlew
+ 
+      - name: Build with Gradle
+        run: ./gradlew build

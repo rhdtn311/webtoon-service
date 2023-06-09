@@ -16,4 +16,4 @@ spring:
   sql:
     init:
       mode: always
-      schema-locations: ../../test/resources/test-init.sql
+      schema-locations: classpath:test-init.sql

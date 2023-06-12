@@ -3,6 +3,8 @@ plugins {
     id 'org.springframework.boot' version '2.7.10'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id 'com.epages.restdocs-api-spec' version '0.16.0'
 }
 
 group = 'com'
@@ -34,6 +36,26 @@ dependencies {
 
     // H2
     testImplementation 'com.h2database:h2:2.1.214'
+
+    // docs
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.16.2'
+}
+
+openapi3 {
+    server = 'https://localhost:8080'
+    title = 'WebToon Service APIs'
+    description = '웹툰서비스의 API 문서입니다.'
+    version = '0.1.0'
+    format = 'yaml'
+}
+
+task copyTest {
+    dependsOn("openapi3")
+    copy {
+        from "$buildDir/api-spec/openapi3.yaml"
+        into "src/main/resources/static/docs/."
+    }
 }
 
 tasks.named('test') {

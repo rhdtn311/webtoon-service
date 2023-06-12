@@ -1,4 +1,4 @@
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     login_id   VARCHAR(15)  NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE users
     CONSTRAINT users_login_id_uindex UNIQUE (login_id)
 );
 
-CREATE TABLE author
+CREATE TABLE IF NOT EXISTS author
 (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     author_name  VARCHAR(20)  NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE author
     CONSTRAINT FK_user_TO_author_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE comic
+CREATE TABLE IF NOT EXISTS comic
 (
     id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
     name                VARCHAR(30)  NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE comic
     CONSTRAINT FK_author_TO_comic_1 FOREIGN KEY (author_id) REFERENCES author (id)
 );
 
-CREATE TABLE alarm
+CREATE TABLE IF NOT EXISTS alarm
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     is_check   BOOLEAN   NOT NULL,
@@ -55,9 +55,9 @@ CREATE TABLE alarm
     CONSTRAINT FK_users_TO_alarm_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE INDEX id_and_created_at ON comic (id, created_at);
+CREATE INDEX IF NOT EXISTS id_and_created_at ON comic (id, created_at);
 
-CREATE TABLE episode
+CREATE TABLE IF NOT EXISTS episode
 (
     id             BIGINT AUTO_INCREMENT PRIMARY KEY,
     title          VARCHAR(255)  NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE episode
     CONSTRAINT FK_comic_TO_episode_1 FOREIGN KEY (comic_id) REFERENCES comic (id)
 );
 
-CREATE TABLE comment
+CREATE TABLE IF NOT EXISTS comment
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     content    VARCHAR(500) NOT NULL,
@@ -85,7 +85,7 @@ CREATE TABLE comment
     CONSTRAINT FK_users_TO_comment_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE comment_hide
+CREATE TABLE IF NOT EXISTS comment_hide
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE comment_hide
     CONSTRAINT FK_users_TO_comment_hide_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE comment_report
+CREATE TABLE IF NOT EXISTS comment_report
 (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     report_reason VARCHAR(50) NULL,
@@ -108,11 +108,11 @@ CREATE TABLE comment_report
     CONSTRAINT FK_users_TO_comment_report_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE INDEX comic_id_AND_episode_number_index ON episode (comic_id, episode_number);
+CREATE INDEX IF NOT EXISTS comic_id_AND_episode_number_index ON episode (comic_id, episode_number);
 
-CREATE INDEX comic_id_index_by_episode ON episode (comic_id);
+CREATE INDEX IF NOT EXISTS comic_id_index_by_episode ON episode (comic_id);
 
-CREATE TABLE episode_image
+CREATE TABLE IF NOT EXISTS episode_image
 (
     id                BIGINT AUTO_INCREMENT PRIMARY KEY,
     content_image_url VARCHAR(2048) NOT NULL,
@@ -124,7 +124,7 @@ CREATE TABLE episode_image
     CONSTRAINT episode_image_episode__fk FOREIGN KEY (episode_id) REFERENCES episode (id)
 );
 
-CREATE TABLE follow
+CREATE TABLE IF NOT EXISTS follow
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE follow
     CONSTRAINT FK_users_TO_follow_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE likes
+CREATE TABLE IF NOT EXISTS likes
 (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     like_type    VARCHAR(15) NOT NULL,
@@ -144,7 +144,7 @@ CREATE TABLE likes
     CONSTRAINT FK_users_TO_likes_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE realtime_comic_ranking
+CREATE TABLE IF NOT EXISTS realtime_comic_ranking
 (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
     record_time VARCHAR(10) NOT NULL,
@@ -157,7 +157,7 @@ CREATE TABLE realtime_comic_ranking
     CONSTRAINT FK_realtime_rank_TO_comic FOREIGN KEY (comic_id) REFERENCES comic (id)
 );
 
-CREATE TABLE star
+CREATE TABLE IF NOT EXISTS star
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     score      INT       NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE star
     CONSTRAINT FK_users_TO_star_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE thumbnail
+CREATE TABLE IF NOT EXISTS thumbnail
 (
     id             BIGINT AUTO_INCREMENT PRIMARY KEY,
     thumbnail_type VARCHAR(10)  NOT NULL,
@@ -181,11 +181,11 @@ CREATE TABLE thumbnail
     CONSTRAINT FK_comic_TO_comic_thumbnail_1 FOREIGN KEY (comic_id) REFERENCES comic (id)
 );
 
-CREATE INDEX comic_id_AND_thumbnail_type ON thumbnail (comic_id, thumbnail_type);
+CREATE INDEX IF NOT EXISTS comic_id_AND_thumbnail_type ON thumbnail (comic_id, thumbnail_type);
 
-CREATE INDEX comic_id_index_by_thumbnail ON thumbnail (comic_id);
+CREATE INDEX IF NOT EXISTS comic_id_index_by_thumbnail ON thumbnail (comic_id);
 
-CREATE TABLE view
+CREATE TABLE IF NOT EXISTS view
 (
     id                BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id           BIGINT    NOT NULL,
@@ -196,6 +196,6 @@ CREATE TABLE view
     CONSTRAINT FK_users_TO_view_1 FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE INDEX last_access_time ON view (last_access_time);
+CREATE INDEX IF NOT EXISTS last_access_time ON view (last_access_time);
 
-CREATE INDEX last_access_time_index ON view (last_access_time);
+CREATE INDEX IF NOT EXISTS last_access_time_index ON view (last_access_time);

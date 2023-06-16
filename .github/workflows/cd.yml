@@ -1,0 +1,87 @@
+name: CD
+on: 
+  push: 
+    branches: "develop"
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - name: pull code
+        uses: actions/checkout@v3
+        
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+        
+      - name: add setting file
+        run: | 
+          echo "${{secrets.APPLICATION_DB}}" >> ./src/main/resources/application-db.yml
+          echo "${{secrets.APPLICATION_AWS}}" >> ./src/main/resources/application-aws.yml
+          
+      - name: Get execution permission to gradlew
+        run: chmod +x ./gradlew
+        
+      - name: api docs setting
+        run: |
+          ./gradlew openapi3
+          ./gradlew copyTest
+ 
+      - name: Build with Gradle
+        run: ./gradlew build
+        
+      - name: check
+        run: ls
+        
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ap-northeast-2
+          
+      - name: Make zip file
+        run: zip ./build/libs/$GITHUB_SHA.zip ./build/libs/*.jar
+        shell: bash
+        
+      - name: upload jar to s3
+        run: aws s3 cp --region ap-northeast-2 ./build/libs/$GITHUB_SHA.zip s3://kongtoon-cd/CD/$GITHUB_SHA.zip
+        
+      - name: Get Github Actions IP
+        id: ip
+        uses: haythem/public-ip@v1.2
+        
+      - name: Add Github Actions IP to Security group
+        env:
+          AWS_DEFAULT_REGION: ap-northeast-2
+        run: |
+          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+      
+      - name: enter ec2 ssh 
+        uses: appleboy/ssh-action@v0.1.10
+        env: 
+            SHA: ${{ github.sha }}
+        with: 
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USER_NAME }}
+          key: ${{ secrets.AWS_PRIVATE_KEY }}
+          envs: SHA
+          script: |
+            RUNNING_PID=$(sudo lsof -i :8080 -t)
+            if [ -n "${RUNNING_PID}" ]; then
+              echo "실행 중인 애플리케이션 PID: ${RUNNING_PID}"
+              kill -15 "${RUNNING_PID}"
+            else
+              echo "실행 중인 애플리케이션이 존재하지 않습니다."
+            fi
+            sudo rm -rf ~/deploy/*
+            aws s3 cp s3://kongtoon-cd/CD/$SHA.zip ~/deploy/$SHA.zip
+            unzip ~/deploy/$SHA.zip -d ~/deploy
+            JAR_NAME=$(ls -tr ~/deploy/build/libs/ | grep T.jar | tail -n 1)
+            nohup java -jar ~/deploy/build/libs/${JAR_NAME} > nohup.out 2> nohup.err < /dev/null &
+
+      - name: Remove github actions IP from security group
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32

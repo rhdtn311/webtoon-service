@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
+import static com.kongtoon.utils.TestConst.*;
 import static com.kongtoon.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
@@ -44,6 +45,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @SpringBootTest
 class UserControllerTest {
+
+	private static final String SIGNUP_TAG = "회원가입";
+	private static final String SIGNUP_SUMMARY = "회원가입 성공, 실패 APIs";
+	private static final String SIGNUP_REQ_SCHEMA = "SignupRequest";
+	private static final String SIGNUP_LOGIN_ID_REQ_FIELD = "loginId";
+	private static final String SIGNUP_NAME_REQ_FIELD = "name";
+	private static final String SIGNUP_EMAIL_REQ_FIELD = "email";
+	private static final String SIGNUP_NICKNAME_REQ_FIELD = "nickname";
+	private static final String SIGNUP_PASSWORD_REQ_FIELD = "password";
+	private static final String SIGNUP_LOGIN_ID_REQ_DESCRIPTION = "로그인ID";
+	private static final String SIGNUP_NAME_REQ_DESCRIPTION = "이름";
+	private static final String SIGNUP_EMAIL_REQ_DESCRIPTION = "이메일";
+	private static final String SIGNUP_NICKNAME_REQ_DESCRIPTION = "닉네임";
+	private static final String SIGNUP_PASSWORD_REQ_DESCRIPTION = "비밀번호";
+
+	private static final String CHECK_LOGIN_ID_DUP_TAG = "로그인ID 중복 체크";
+	private static final String CHECK_LOGIN_ID_DUP_SUMMARY = "로그인ID 중복 체크 성공, 실패 APIs";
+	private static final String CHECK_LOGIN_ID_DUP_REQ_SCHEMA = "loginId";
+	private static final String CHECK_LOGIN_ID_LOGIN_ID_REQ_FIELD = "loginId";
+	private static final String CHECK_LOGIN_ID_LOGIN_ID_FIELD_DESCRIPTION = "로그인ID";
+
+	private static final String CHECK_EMAIL_DUP_TAG = "이메일 중복 체크";
+	private static final String CHECK_EMAIL_DUP_SUMMARY = "이메일 중복 체크 성공, 실패 APIs";
+	private static final String CHECK_EMAIL_DUP_REQ_SCHEMA = "email";
+	private static final String CHECK_EMAIL_EMAIL_REQ_FIELD = "email";
+	private static final String CHECK_EMAIL_EMAIL_REQ_DESCRIPTION = "이메일";
+
+	private static final String LOGIN_TAG = "로그인";
+	private static final String LOGIN_SUMMARY = "로그인 성공, 실패 APIs";
+	private static final String LOGIN_REQ_SCHEMA = "LoginRequest";
+	private static final String LOGIN_LOGIN_ID_REQ_FIELD = "loginId";
+	private static final String LOGIN_PASSWORD_REQ_FIELD = "password";
+	private static final String LOGIN_LOGIN_ID_REQ_DESCRIPTION = "로그인ID";
+	private static final String LOGIN_PASSWORD_REQ_DESCRIPTION = "비밀번호";
+
 
 	@Autowired
 	UserRepository userRepository;
@@ -80,18 +116,18 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("회원가입 성공",
 						ResourceSnippetParameters.builder()
-								.tag("회원가입")
-								.summary("회원가입 성공, 실패 APIs")
-								.requestSchema(Schema.schema("SignupRequest"))
+								.tag(SIGNUP_TAG)
+								.summary(SIGNUP_SUMMARY)
+								.requestSchema(Schema.schema(SIGNUP_REQ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath("loginId").type(JsonFieldType.STRING).description(" 로그인ID"),
-								fieldWithPath("name").type(JsonFieldType.STRING).description(" 이름"),
-								fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
-								fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네인"),
-								fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
+								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
 						),
 						responseHeaders(
 								headerWithName("Location").description("저장된 회원 URL")
@@ -122,8 +158,8 @@ class UserControllerTest {
 
 		// then
 		resultActions.andExpect(status().isConflict());
-		resultActions.andExpect(jsonPath("message").value(ErrorCode.DUPLICATE_EMAIL.getMessage()));
-		resultActions.andExpect(jsonPath("code").value(ErrorCode.DUPLICATE_EMAIL.name()));
+		resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_EMAIL.getMessage()));
+		resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_EMAIL.name()));
 
 		long afterUserCount = userRepository.count();
 		assertThat(beforeUserCount).isSameAs(afterUserCount);
@@ -132,23 +168,23 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("이메일 중복으로 회원가입 실패",
 						ResourceSnippetParameters.builder()
-								.tag("회원가입")
-								.requestSchema(Schema.schema("SignupRequest"))
-								.responseSchema(Schema.schema("공통예외객체"))
+								.tag(SIGNUP_TAG)
+								.requestSchema(Schema.schema(SIGNUP_REQ_SCHEMA))
+								.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath("loginId").type(JsonFieldType.STRING).description(" 로그인ID"),
-								fieldWithPath("name").type(JsonFieldType.STRING).description(" 이름"),
-								fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
-								fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네인"),
-								fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
+								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
 						),
 						responseFields(
-								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
-								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
-								fieldWithPath("inputErrors").type(JsonFieldType.NULL).description("요청 에러 정보")
+								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
 						)
 				)
 		);
@@ -176,8 +212,8 @@ class UserControllerTest {
 
 		// then
 		resultActions.andExpect(status().isConflict());
-		resultActions.andExpect(jsonPath("message").value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()));
-		resultActions.andExpect(jsonPath("code").value(ErrorCode.DUPLICATE_LOGIN_ID.name()));
+		resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()));
+		resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.name()));
 
 		long afterUserCount = userRepository.count();
 		assertThat(beforeUserCount).isSameAs(afterUserCount);
@@ -186,23 +222,23 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("로그인ID 중복으로 회원가입 실패",
 						ResourceSnippetParameters.builder()
-								.tag("회원가입")
-								.requestSchema(Schema.schema("SignupRequest"))
-								.responseSchema(Schema.schema("공통예외객체"))
+								.tag(SIGNUP_TAG)
+								.requestSchema(Schema.schema(SIGNUP_REQ_SCHEMA))
+								.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath("loginId").type(JsonFieldType.STRING).description(" 로그인ID"),
-								fieldWithPath("name").type(JsonFieldType.STRING).description(" 이름"),
-								fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
-								fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네인"),
-								fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
+								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
 						),
 						responseFields(
-								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
-								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
-								fieldWithPath("inputErrors").type(JsonFieldType.NULL).description("요청 에러 정보")
+								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
 						)
 				)
 		);
@@ -225,10 +261,10 @@ class UserControllerTest {
 
 		// then
 		resultActions.andExpect(status().isBadRequest());
-		resultActions.andExpect(jsonPath("message").value(ErrorCode.INVALID_INPUT.getMessage()));
-		resultActions.andExpect(jsonPath("code").value(ErrorCode.INVALID_INPUT.name()));
-		resultActions.andExpect(jsonPath("inputErrors[0].message").value("잘못된 형식의 이메일입니다."));
-		resultActions.andExpect(jsonPath("inputErrors[0].field").value("email"));
+		resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.INVALID_INPUT.getMessage()));
+		resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.INVALID_INPUT.name()));
+		resultActions.andExpect(jsonPath(INPUT_ERROR_INFOS_MESSAGE_FIELD).value("잘못된 형식의 이메일입니다."));
+		resultActions.andExpect(jsonPath(INPUT_ERROR_INFOS_FIELD_FIELD).value(SIGNUP_EMAIL_REQ_FIELD));
 
 		long afterUserCount = userRepository.count();
 		assertThat(beforeUserCount).isSameAs(afterUserCount);
@@ -237,25 +273,25 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("이메일 형식에 맞지 않아 회원가입 실패",
 						ResourceSnippetParameters.builder()
-								.tag("회원가입")
-								.requestSchema(Schema.schema("SignupRequest"))
-								.responseSchema(Schema.schema("공통예외객체 상세"))
+								.tag(SIGNUP_TAG)
+								.requestSchema(Schema.schema(SIGNUP_REQ_SCHEMA))
+								.responseSchema(Schema.schema(COMMON_EX_OBJ_DETAIL_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath("loginId").type(JsonFieldType.STRING).description(" 로그인ID"),
-								fieldWithPath("name").type(JsonFieldType.STRING).description(" 이름"),
-								fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
-								fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네인"),
-								fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
+								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
 						),
 						responseFields(
-								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
-								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
-								fieldWithPath("inputErrors").type(JsonFieldType.ARRAY).description("요청 에러 정보"),
-								fieldWithPath("inputErrors[].message").type(JsonFieldType.STRING).description("요청 에러 메세지"),
-								fieldWithPath("inputErrors[].field").type(JsonFieldType.STRING).description("요청 에러 필드")
+								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.ARRAY).description(INPUT_ERROR_INFOS_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_MESSAGE_FIELD).type(JsonFieldType.STRING).description(INPUT_ERROR_INFOS_MESSAGE_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_FIELD_FIELD).type(JsonFieldType.STRING).description(INPUT_ERROR_INFOS_FIELD_DESCRIPTION)
 						)
 				)
 		);
@@ -278,13 +314,14 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("로그인ID가 중복되지 않아 로그인ID 중복 체크 성공",
 						ResourceSnippetParameters.builder()
-								.tag("로그인ID 중복 체크")
-								.requestSchema(Schema.schema("loginId"))
+								.tag(CHECK_LOGIN_ID_DUP_TAG)
+								.summary(CHECK_LOGIN_ID_DUP_SUMMARY)
+								.requestSchema(Schema.schema(CHECK_LOGIN_ID_DUP_REQ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						pathParameters(
-								parameterWithName("loginId").description("중복 체크하는 로그인ID")
+								parameterWithName(CHECK_LOGIN_ID_LOGIN_ID_REQ_FIELD).description(CHECK_LOGIN_ID_LOGIN_ID_FIELD_DESCRIPTION)
 						)
 				)
 		);
@@ -304,26 +341,27 @@ class UserControllerTest {
 
 		// then
 		resultActions.andExpect(status().isConflict());
-		resultActions.andExpect(jsonPath("message").value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()));
-		resultActions.andExpect(jsonPath("code").value(ErrorCode.DUPLICATE_LOGIN_ID.name()));
+		resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()));
+		resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.name()));
 
 		// docs
 		resultActions.andDo(
 				document("로그인ID가 중복되어 로그인ID 중복 체크 실패",
 						ResourceSnippetParameters.builder()
-								.tag("로그인ID 중복 체크")
-								.requestSchema(Schema.schema("loginId"))
-								.responseSchema(Schema.schema("공통예외객체"))
+								.tag(CHECK_LOGIN_ID_DUP_TAG)
+								.summary(CHECK_LOGIN_ID_DUP_SUMMARY)
+								.requestSchema(Schema.schema(CHECK_LOGIN_ID_DUP_REQ_SCHEMA))
+								.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						pathParameters(
-								parameterWithName("loginId").description("중복 체크하는 로그인ID")
+								parameterWithName(CHECK_LOGIN_ID_LOGIN_ID_REQ_FIELD).description(CHECK_LOGIN_ID_LOGIN_ID_FIELD_DESCRIPTION)
 						),
 						responseFields(
-								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
-								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
-								fieldWithPath("inputErrors").type(JsonFieldType.NULL).description("요청 에러 정보")
+								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
 						)
 				)
 		);
@@ -346,13 +384,14 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("이메일이 중복되지 않아 이메일 중복 체크 성공",
 						ResourceSnippetParameters.builder()
-								.tag("이메일 중복 체크")
-								.requestSchema(Schema.schema("email"))
+								.tag(CHECK_EMAIL_DUP_TAG)
+								.summary(CHECK_EMAIL_DUP_SUMMARY)
+								.requestSchema(Schema.schema(CHECK_EMAIL_DUP_REQ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						pathParameters(
-								parameterWithName("email").description("중복 체크하는 이메일")
+								parameterWithName(CHECK_EMAIL_EMAIL_REQ_FIELD).description(CHECK_EMAIL_EMAIL_REQ_DESCRIPTION)
 						)
 				)
 		);
@@ -379,19 +418,20 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("이메일이 중복되어 이메일 중복 체크 실패",
 						ResourceSnippetParameters.builder()
-								.tag("이메일 중복 체크")
-								.requestSchema(Schema.schema("email"))
-								.responseSchema(Schema.schema("공통예외객체"))
+								.tag(CHECK_EMAIL_DUP_TAG)
+								.summary(CHECK_EMAIL_DUP_SUMMARY)
+								.requestSchema(Schema.schema(CHECK_EMAIL_DUP_REQ_SCHEMA))
+								.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						pathParameters(
-								parameterWithName("email").description("중복 체크하는 이메일")
+								parameterWithName(CHECK_EMAIL_EMAIL_REQ_FIELD).description(CHECK_EMAIL_EMAIL_REQ_DESCRIPTION)
 						),
 						responseFields(
-								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
-								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
-								fieldWithPath("inputErrors").type(JsonFieldType.NULL).description("요청 에러 정보")
+								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
 						)
 				)
 		);
@@ -418,15 +458,15 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("로그인 성공",
 						ResourceSnippetParameters.builder()
-								.tag("로그인")
-								.summary("로그인 성공, 실패 APIs")
-								.requestSchema(Schema.schema("LoginRequest"))
+								.tag(LOGIN_TAG)
+								.summary(LOGIN_SUMMARY)
+								.requestSchema(Schema.schema(LOGIN_REQ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath("loginId").type(JsonFieldType.STRING).description("로그인ID"),
-								fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
+								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(LOGIN_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_PASSWORD_REQ_DESCRIPTION)
 						)
 				)
 		);
@@ -445,27 +485,28 @@ class UserControllerTest {
 
 		// then
 		resultActions.andExpect(status().isNotFound());
-		resultActions.andExpect(jsonPath("message").value(ErrorCode.USER_NOT_FOUND.getMessage()));
-		resultActions.andExpect(jsonPath("code").value(ErrorCode.USER_NOT_FOUND.name()));
+		resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.USER_NOT_FOUND.getMessage()));
+		resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.USER_NOT_FOUND.name()));
 
 		// docs
 		resultActions.andDo(
 				document("로그인 ID가 존재하지 않아 로그인 실패",
 						ResourceSnippetParameters.builder()
-								.tag("로그인")
-								.summary("로그인 성공, 실패 APIs")
-								.requestSchema(Schema.schema("LoginRequest"))
+								.tag(LOGIN_TAG)
+								.summary(LOGIN_SUMMARY)
+								.requestSchema(Schema.schema(LOGIN_REQ_SCHEMA))
+								.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath("loginId").type(JsonFieldType.STRING).description("로그인ID"),
-								fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
+								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(LOGIN_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_PASSWORD_REQ_DESCRIPTION)
 						),
 						responseFields(
-								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
-								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
-								fieldWithPath("inputErrors").type(JsonFieldType.NULL).description("요청 에러 정보")
+								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
 						)
 				)
 		);
@@ -487,27 +528,28 @@ class UserControllerTest {
 
 		// then
 		resultActions.andExpect(status().isConflict());
-		resultActions.andExpect(jsonPath("message").value(ErrorCode.LOGIN_FAIL.getMessage()));
-		resultActions.andExpect(jsonPath("code").value(ErrorCode.LOGIN_FAIL.name()));
+		resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.LOGIN_FAIL.getMessage()));
+		resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.LOGIN_FAIL.name()));
 
 		// docs
 		resultActions.andDo(
 				document("비밀번호 불일치로 로그인 실패",
 						ResourceSnippetParameters.builder()
-								.tag("로그인")
-								.summary("로그인 성공, 실패 APIs")
-								.requestSchema(Schema.schema("LoginRequest"))
+								.tag(LOGIN_TAG)
+								.summary(LOGIN_SUMMARY)
+								.requestSchema(Schema.schema(LOGIN_REQ_SCHEMA))
+								.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
 						,
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath("loginId").type(JsonFieldType.STRING).description("로그인ID"),
-								fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호")
+								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(LOGIN_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_PASSWORD_REQ_DESCRIPTION)
 						),
 						responseFields(
-								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
-								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
-								fieldWithPath("inputErrors").type(JsonFieldType.NULL).description("요청 에러 정보")
+								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
 						)
 				)
 		);

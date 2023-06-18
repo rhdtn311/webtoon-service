@@ -34,6 +34,8 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.headerWit
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureRestDocs
@@ -254,6 +256,142 @@ class UserControllerTest {
 								fieldWithPath("inputErrors").type(JsonFieldType.ARRAY).description("요청 에러 정보"),
 								fieldWithPath("inputErrors[].message").type(JsonFieldType.STRING).description("요청 에러 메세지"),
 								fieldWithPath("inputErrors[].field").type(JsonFieldType.STRING).description("요청 에러 필드")
+						)
+				)
+		);
+	}
+
+	@Test
+	@DisplayName("로그인ID 중복 체크에 성공한다.")
+	void checkDuplicateLoginIdSuccess() throws Exception {
+
+		// given
+		String loginId = "loginId";
+
+		// when
+		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-id/{loginId}", loginId));
+
+		// then
+		resultActions.andExpect(status().isNoContent());
+
+		// docs
+		resultActions.andDo(
+				document("로그인ID가 중복되지 않아 로그인ID 중복 체크 성공",
+						ResourceSnippetParameters.builder()
+								.tag("로그인ID 중복 체크")
+								.requestSchema(Schema.schema("loginId"))
+						,
+						preprocessRequest(prettyPrint()),
+						preprocessResponse(prettyPrint()),
+						pathParameters(
+								parameterWithName("loginId").description("중복 체크하는 로그인ID")
+						)
+				)
+		);
+	}
+
+	@Test
+	@DisplayName("로그인 중복 체크에 실패한다.")
+	void checkDuplicateLoginIdFail() throws Exception {
+
+		// given
+		String loginId = "dupLoginId";
+		User user = createUser("email@email.com", loginId);
+		userRepository.save(user);
+
+		// when
+		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-id/{loginId}", loginId));
+
+		// then
+		resultActions.andExpect(status().isConflict());
+		resultActions.andExpect(jsonPath("message").value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()));
+		resultActions.andExpect(jsonPath("code").value(ErrorCode.DUPLICATE_LOGIN_ID.name()));
+
+		// docs
+		resultActions.andDo(
+				document("로그인ID가 중복되어 로그인ID 중복 체크 실패",
+						ResourceSnippetParameters.builder()
+								.tag("로그인ID 중복 체크")
+								.requestSchema(Schema.schema("loginId"))
+								.responseSchema(Schema.schema("공통예외객체"))
+						,
+						preprocessRequest(prettyPrint()),
+						preprocessResponse(prettyPrint()),
+						pathParameters(
+								parameterWithName("loginId").description("중복 체크하는 로그인ID")
+						),
+						responseFields(
+								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
+								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
+								fieldWithPath("inputErrors").type(JsonFieldType.NULL).description("요청 에러 정보")
+						)
+				)
+		);
+	}
+
+	@Test
+	@DisplayName("이메일 중복 체크에 성공한다.")
+	void checkDuplicateEmailSuccess() throws Exception {
+
+		// given
+		String email = "email@email.com";
+
+		// when
+		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-email/{email}", email));
+
+		// then
+		resultActions.andExpect(status().isNoContent());
+
+		// docs
+		resultActions.andDo(
+				document("이메일이 중복되지 않아 이메일 중복 체크 성공",
+						ResourceSnippetParameters.builder()
+								.tag("이메일 중복 체크")
+								.requestSchema(Schema.schema("email"))
+						,
+						preprocessRequest(prettyPrint()),
+						preprocessResponse(prettyPrint()),
+						pathParameters(
+								parameterWithName("email").description("중복 체크하는 이메일")
+						)
+				)
+		);
+	}
+
+	@Test
+	@DisplayName("이메일 중복 체크에 실패한다.")
+	void checkDuplicateEmailFail() throws Exception {
+
+		// given
+		String email = "dupEmail@email.com";
+		User user = createUser(email, "loginId");
+		userRepository.save(user);
+
+		// when
+		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-email/{email}", email));
+
+		// then
+		resultActions.andExpect(status().isConflict());
+		resultActions.andExpect(jsonPath("message").value(ErrorCode.DUPLICATE_EMAIL.getMessage()));
+		resultActions.andExpect(jsonPath("code").value(ErrorCode.DUPLICATE_EMAIL.name()));
+
+		// docs
+		resultActions.andDo(
+				document("이메일이 중복되어 이메일 중복 체크 실패",
+						ResourceSnippetParameters.builder()
+								.tag("이메일 중복 체크")
+								.requestSchema(Schema.schema("email"))
+								.responseSchema(Schema.schema("공통예외객체"))
+						,
+						preprocessRequest(prettyPrint()),
+						preprocessResponse(prettyPrint()),
+						pathParameters(
+								parameterWithName("email").description("중복 체크하는 이메일")
+						),
+						responseFields(
+								fieldWithPath("message").type(JsonFieldType.STRING).description("실패 메세지"),
+								fieldWithPath("code").type(JsonFieldType.STRING).description("실패 코드"),
+								fieldWithPath("inputErrors").type(JsonFieldType.NULL).description("요청 에러 정보")
 						)
 				)
 		);

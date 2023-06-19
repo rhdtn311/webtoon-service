@@ -5,9 +5,12 @@ import com.epages.restdocs.apispec.Schema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.common.security.PasswordEncoder;
+import com.kongtoon.common.session.UserSessionUtil;
+import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
 import com.kongtoon.domain.user.model.User;
+import com.kongtoon.domain.user.model.UserAuthority;
 import com.kongtoon.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
@@ -31,6 +35,7 @@ import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.docume
 import static com.kongtoon.utils.TestConst.*;
 import static com.kongtoon.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -80,6 +85,8 @@ class UserControllerTest {
 	private static final String LOGIN_LOGIN_ID_REQ_DESCRIPTION = "로그인ID";
 	private static final String LOGIN_PASSWORD_REQ_DESCRIPTION = "비밀번호";
 
+	private static final String LOGOUT_TAG = "로그아웃";
+	private static final String LOGOUT_SUMMARY = "로그아웃 성공, 실패 APIs";
 
 	@Autowired
 	UserRepository userRepository;
@@ -535,22 +542,43 @@ class UserControllerTest {
 		resultActions.andDo(
 				document("비밀번호 불일치로 로그인 실패",
 						ResourceSnippetParameters.builder()
-								.tag(LOGIN_TAG)
-								.summary(LOGIN_SUMMARY)
-								.requestSchema(Schema.schema(LOGIN_REQ_SCHEMA))
-								.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
+								.tag(LOGOUT_TAG)
+								.summary(LOGOUT_SUMMARY)
 						,
-						preprocessRequest(prettyPrint()),
-						preprocessResponse(prettyPrint()),
-						requestFields(
-								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
-								fieldWithPath(LOGIN_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_PASSWORD_REQ_DESCRIPTION)
-						),
 						responseFields(
 								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
 								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
 								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
 						)
+				)
+		);
+	}
+
+	@Test
+	@DisplayName("로그아웃에 성공한다.")
+	void logoutSuccess() throws Exception {
+
+		// given
+		UserAuthDTO user = new UserAuthDTO(1L, "loginId", UserAuthority.USER);
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, user);
+
+		// when
+		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/logout")
+				.session(session)
+		);
+
+		// then
+		resultActions.andExpect(status().isNoContent());
+		assertThatThrownBy(() -> session.getAttribute(UserSessionUtil.LOGIN_MEMBER_ID))
+				.isInstanceOf(IllegalStateException.class);
+
+		// docs
+		resultActions.andDo(
+				document("로그아웃 성공",
+						ResourceSnippetParameters.builder()
+								.tag(LOGOUT_TAG)
+								.summary(LOGOUT_SUMMARY)
 				)
 		);
 	}

@@ -8,6 +8,8 @@ import com.kongtoon.domain.user.dto.request.SignupRequest;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -59,6 +61,18 @@ public class TestUtil {
 		);
 	}
 
+	public static User createUser(UserAuthority userAuthority) {
+		return new User(
+				"loginId",
+				"Name",
+				"email@email.com",
+				"nickname",
+				"password",
+				userAuthority,
+				true
+		);
+	}
+
 	public static LoginRequest createLoginRequest() {
 		return new LoginRequest(
 				"loginId", "password"
@@ -91,9 +105,17 @@ public class TestUtil {
 
 	public static MockMultipartFile createMockMultipartFile() throws IOException {
 
-		return new MockMultipartFile("mock_image_file",
+		return new MockMultipartFile("mock_image_file.png",
 				"mock_image_file.png",
 				"image/png",
+				new FileInputStream("src/test/resources/file/mock_image_file.png"));
+	}
+
+	public static MockMultipartFile createMockMultipartFile(String name, String originalFilename, String contentType) throws IOException {
+
+		return new MockMultipartFile(name,
+				originalFilename,
+				contentType,
 				new FileInputStream("src/test/resources/file/mock_image_file.png"));
 	}
 
@@ -114,5 +136,38 @@ public class TestUtil {
 	public static Thumbnail createThumbnail(ThumbnailType thumbnailType, String imageUrl, Comic comic) {
 		return new Thumbnail(
 				thumbnailType, imageUrl, comic);
+	}
+
+	public static <T> String createMultipartRequestBody(List<T> parts) throws IOException {
+		StringBuilder requestPartBody = new StringBuilder();
+		String boundary = "----------------------------boundary";
+		String newLine = System.lineSeparator();
+
+		for (T part : parts) {
+			if (part instanceof MultipartFile file) {
+				requestPartBody.append(boundary)
+						.append(newLine)
+						.append("Content-Disposition: form-data; ")
+						.append("name= \"").append(file.getName()).append("\"; ")
+						.append("filename=\"").append(file.getOriginalFilename()).append("\"")
+						.append(newLine)
+						.append("Content-Type: ").append(file.getContentType())
+						.append(newLine)
+						.append(newLine)
+						.append("binary file data")
+						.append(newLine);
+			} else if (part instanceof MockPart mockPart) {
+				requestPartBody.append(boundary)
+						.append(newLine)
+						.append("Content-Disposition: form-data; ")
+						.append("name= \"").append(mockPart.getName()).append("\"; ")
+						.append(newLine)
+						.append(newLine)
+						.append(new String(mockPart.getInputStream().readAllBytes()))
+						.append(newLine);
+			}
+		}
+
+		return requestPartBody.toString();
 	}
 }

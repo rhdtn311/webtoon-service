@@ -1,22 +1,20 @@
 package com.kongtoon.domain.like.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-
 import com.kongtoon.common.security.annotation.LoginCheck;
 import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.like.model.dto.response.LikeResponse;
 import com.kongtoon.domain.like.service.LikeService;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.model.UserAuthority;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.Positive;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 public class LikeController {
 
@@ -25,7 +23,7 @@ public class LikeController {
 	@LoginCheck(authority = UserAuthority.USER)
 	@PostMapping("/episodes/{episodeId}/like")
 	public ResponseEntity<LikeResponse> createEpisodeLike(
-			@PathVariable Long episodeId,
+			@PathVariable @Positive Long episodeId,
 			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
 	) {
 		LikeResponse likeResponse = likeService.createEpisodeLike(episodeId, userAuth.loginId());
@@ -36,7 +34,7 @@ public class LikeController {
 	@LoginCheck(authority = UserAuthority.USER)
 	@DeleteMapping("/episodes/{episodeId}/like")
 	public ResponseEntity<LikeResponse> deleteEpisodeLike(
-			@PathVariable Long episodeId,
+			@PathVariable @Positive Long episodeId,
 			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
 	) {
 		LikeResponse likeResponse = likeService.deleteEpisodeLike(episodeId, userAuth.loginId());

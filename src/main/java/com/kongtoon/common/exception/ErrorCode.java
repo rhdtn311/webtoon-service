@@ -5,8 +5,10 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
 	INVALID_INPUT("잘못된 입력값입니다.", 400),
+	METHOD_NOT_ALLOWED("지원하지 않은 HTTP 메소드입니다.", 400),
 	AUTHENTICATION_FAIL("인증 실패입니다.", 401),
 	UNAUTHORIZED("권한이 없습니다.", 403),
+	INTERNAL_SERVER_ERROR("예상치 못한 에러입니다.", 500),
 
 	USER_NOT_FOUND("존재하지 않는 유저입니다.", 404),
 	LOGIN_FAIL("아이디/비밀번호를 확인해주세요.", 409),

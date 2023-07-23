@@ -1,20 +1,5 @@
 package com.kongtoon.domain.author.controller;
 
-import java.net.URI;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
-
 import com.kongtoon.common.security.annotation.LoginCheck;
 import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.author.model.dto.request.AuthorCreateRequest;
@@ -22,8 +7,15 @@ import com.kongtoon.domain.author.model.dto.response.AuthorResponse;
 import com.kongtoon.domain.author.service.AuthorService;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.model.UserAuthority;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/authors")
@@ -47,7 +39,7 @@ public class AuthorController {
 
 	@LoginCheck(authority = UserAuthority.USER)
 	@GetMapping("/{authorId}")
-	public ResponseEntity<AuthorResponse> getAuthor(@PathVariable Long authorId) {
+	public ResponseEntity<AuthorResponse> getAuthor(@PathVariable @Positive Long authorId) {
 		AuthorResponse authorResponse = authorService.getAuthor(authorId);
 
 		return ResponseEntity.ok(authorResponse);

@@ -3,7 +3,6 @@ package com.kongtoon.domain.view.service.event;
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.view.model.View;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,9 +10,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class EpisodeViewedEvent {
 
-	User user;
-
-	Episode episode;
+	private final User user;
+	private final Episode episode;
 
 	public View toView() {
 		return new View(

@@ -1,42 +1,58 @@
 package com.kongtoon.domain.view.service.event;
 
-import java.util.Optional;
-
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
-
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.view.model.View;
+import com.kongtoon.domain.view.repository.ViewJdbcRepository;
 import com.kongtoon.domain.view.repository.ViewRepository;
-
+import com.kongtoon.domain.view.repository.cache.ViewCache;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class EpisodeViewedEventListener {
 
+	private final ViewJdbcRepository viewJdbcRepository;
+	private final ViewCache viewCache;
 	private final ViewRepository viewRepository;
 
 	@Async
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	@TransactionalEventListener
-	public void saveView(EpisodeViewedEvent episodeViewedEvent) {
+	@EventListener
+	public synchronized void saveView(EpisodeViewedEvent episodeViewedEvent) {
 		User user = episodeViewedEvent.getUser();
 		Episode episode = episodeViewedEvent.getEpisode();
 
-		View view = getViewIfPresent(user, episode)
-				.orElse(episodeViewedEvent.toView());
+		try {
+			viewCache.save(user, episode);
+		} catch (Exception e) {
+			saveViewInDB(user, episode);
+		}
 
-		view.updateLastAccessTime();
-
-		viewRepository.save(view);
+		checkAndBulkInsert();
+		checkAndBulkUpdate();
 	}
 
-	private Optional<View> getViewIfPresent(User user, Episode episode) {
-		return viewRepository.findByUserAndEpisode(user, episode);
+	private void saveViewInDB(User user, Episode episode) {
+		viewRepository.findByUserAndEpisode(user, episode)
+				.ifPresentOrElse(viewRepository::save,
+						() -> viewRepository.save(new View(user, episode))
+				);
+	}
+
+	private void checkAndBulkUpdate() {
+		if (viewCache.checkUpdate()) {
+			viewJdbcRepository.batchUpdate(viewCache.getValues(ViewCache.UPDATE_MAP_MAIN_KEY));
+			viewCache.clear(ViewCache.UPDATE_MAP_MAIN_KEY);
+		}
+	}
+
+	private void checkAndBulkInsert() {
+		if (viewCache.checkInsert()) {
+			viewJdbcRepository.batchInsert(viewCache.getValues(ViewCache.INSERT_MAP_MAIN_KEY));
+			viewCache.clear(ViewCache.INSERT_MAP_MAIN_KEY);
+		}
 	}
 }

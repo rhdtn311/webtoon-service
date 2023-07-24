@@ -1,28 +1,14 @@
 package com.kongtoon.domain.view.model;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.user.model.User;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "view")
@@ -35,11 +21,9 @@ public class View {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@CreatedDate
 	@Column(name = "first_access_time", nullable = false)
 	private LocalDateTime firstAccessTime;
 
-	@LastModifiedDate
 	@Column(name = "last_access_time", nullable = false)
 	private LocalDateTime lastAccessTime;
 
@@ -54,6 +38,8 @@ public class View {
 	public View(User user, Episode episode) {
 		this.user = user;
 		this.episode = episode;
+		this.firstAccessTime = LocalDateTime.now();
+		this.lastAccessTime = LocalDateTime.now();
 	}
 
 	public void updateLastAccessTime() {

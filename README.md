@@ -490,6 +490,7 @@ void signUpDuplicatedEmailFail() throws Exception {
     }
  ```
 API 문서화를 위한 테스트 코드를 작성합니다.
+  
 ![](https://blog.kakaocdn.net/dn/b3pTZs/btso12ewOYU/8EdbHVRZ3dAiGojgoX5IA0/img.png)
 
 Swagger UI로 API 문서가 생성됩니다.

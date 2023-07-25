@@ -82,16 +82,20 @@ ORDER  BY (IF(DATE_SUB(NOW(), INTERVAL  3  DAY) <= c.created_at, 1, 2)), COUNT(v
 ```
 웹툰의 조회수를 계산하기 위해 특정 웹툰의 최근 에피소드를 찾고, 조회수 테이블에서 해당 에피소드의 id와 일치하는 로우 수를 count 해줘야 합니다. 
 
+<br>
+
 #### 문제점
 이때 주요 테이블인 조회수 테이블에 데이터가 500만개 있을 때 위 쿼리를 실행했더니 약 0.86초의 시간이 소요되었습니다.
 
 ![](https://blog.kakaocdn.net/dn/VFAbc/btseR9oliRh/4GTfRkGSKkvMRkDKtk7GgK/img.png)
+
 
 '장르별 웹툰 목록 조회' 기능은 메인 페이지에 사용자가 접속할 때마다 호출되는 API이기 때문에 호출 수가 빈번하다고 판단했고 매 API를 호출할 때마다 단순 쿼리 수행 시간만 0.87초 걸리는 것은 성능상 좋지 않다고 판단했습니다. 따라서 쿼리 튜닝을 진행했습니다.
 
 #### 해결 과정
 우선 쿼리 실행계획을 분석했습니다. 
 ![](https://blog.kakaocdn.net/dn/dIMoMK/btseNsQzd63/xohVquqVygzJgz721hvCu1/img.png)
+
 
 이때 `select_type`에 `DEPENDENT SUBQUERY`가 존재했고, 이를 검색해본 결과 **상관 서브쿼리**라는 것을 알게되었습니다. 상관 서브쿼리는 상위 쿼리 결과에 의존하여, 상위 쿼리의 로우 하나 당 서브쿼리를 한 번씩 실행하는 쿼리로, 위 쿼리에서는 상위 쿼리의 모든 로우에 대해 `c.id`를 서브쿼리의 조건절로 사용했기 때문에 조회된 모든 로우 수만큼 서브쿼리가 실행되어 조회 성능이 떨어지게 된 것입니다.
 
@@ -114,17 +118,21 @@ ORDER  BY (IF(DATE_SUB(NOW(), INTERVAL  3  DAY) <= c.created_at, 1, 2)), COUNT(v
 위 쿼리는 이전 쿼리와 달리 상위 쿼리의 결과에 상관없이 서브쿼리 자체로 실행 가능하기 때문에 딱 한 번만 실행됩니다. 
 
 ![](https://blog.kakaocdn.net/dn/bptHr2/btseQECApF4/DgZsjnoRC4EK4SnVdqBFck/img.png)
+
 같은 조건으로 조회 쿼리를 실행한 결과 0.07초로 개선되었습니다.
 
 #### 추가
 ![](https://blog.kakaocdn.net/dn/cegDe0/btseRW3Pzel/QHyfK85hRuMGooHutHa21K/img.png)
+
 추가적으로 이를 더 개선하고자 실행계획을 확인하였고 `in`절을 검사할 때 인덱스를 적절히 사용하지 못하고 있는 것을 확인했습니다. 따라서 `(e.comic_id, e.episode_number)` 복합인덱스를 생성하였습니다.
 ```sql
 create index comic_id_AND_episode_number on episode (comic_id, episode_number);
 ```
 ![](https://blog.kakaocdn.net/dn/cavqz8/btseQkqPOC8/xj3L2fUEFdhltCtqYuQlXK/img.png)
+
 다시 실행계획을 분석해본 결과 커버링 인덱스를 사용하고 있는 것을 확인하였습니다.
 ![](https://blog.kakaocdn.net/dn/bi9bLV/btseTgtXqz9/12nmm7wWWI1ANbd7Sc4h21/img.png)
+
 쿼리 성능 또한 0.02초로 개선되었습니다.
 
 </div>
@@ -164,9 +172,11 @@ DESC LIMIT 10;
 
 #### 문제점
 ![](https://blog.kakaocdn.net/dn/lnjd7/btsf59gIdMl/6sCH6J1DMPRAYeWWdFAbjk/img.png)
+
 이때 주요 테이블인 조회 테이블에 데이터가 500만개 있을 때 위 쿼리를 실행했더니 약 5초의 시간이 소요되었습니다.
 
 ![](https://blog.kakaocdn.net/dn/dwu2s0/btsf2pd47pO/STVbvikM3b0Ky6D0t7blG1/img.png)
+
 실행 계획을 살펴보니, 약 500만개의 데이터가 있는 조회 테이블을 FULL TABLE SCAN 하기 때문이었습니다. 조회 조건인 `last_access_time` 컬럼에 인덱스를 추가하여 조회 성능을 높일 수도 있었지만 조회 테이블 특성 상 데이터의 삽입, 수정이 많은 테이블이기 때문에 인덱스를 추가하는 것은 오히려 성능 상 좋지 않을 것이라 판단했습니다.
 
 #### 해결
@@ -190,8 +200,10 @@ DESC LIMIT 10;
 <br>
 
 ![](https://blog.kakaocdn.net/dn/bSL5aI/btsgaMyEXI0/Cp0DVHkuqoJLOKHYVnDtok/img.png)
+
 '실시간 인기 웹툰 목록' 테이블을 생성했습니다.
 ![](https://blog.kakaocdn.net/dn/nMP3a/btsgbIwdqqo/3tbNzm9RcEvNWGkeGdJNQ0/img.png)
+
 스프링 스케줄러를 사용하여 2시간에 한 번씩 실시간 인기 웹툰 목록 테이블에 2시간동안 조회수가 가장 높은 10개의 웹툰 목록을 삽입하도록 했습니다. 
 
 ### 결과
@@ -208,13 +220,16 @@ WHERE realtime_comic_ranking.record_date =  '2023-05-16'  AND
 ORDER  BY `ranks` ASC;
 ```
 ![](https://blog.kakaocdn.net/dn/cAwHRM/btsf59HUb3K/Eo7b75eYIYqKKD4HZXDBRk/img.png)
+
 결과는 약 0.14초의 시간이 소요되었습니다.
 ```sql
 ALTER  TABLE `web_comics`.`realtime_comic_ranking` 
 ADD INDEX `record_date_AND_record_time_index` (`record_date` ASC, `record_time` ASC) VISIBLE;;
 ```
 추가적으로 조건절에 사용되는 컬럼에 복합 인덱스를 추가했습니다.
+
 ![](https://blog.kakaocdn.net/dn/NzDqx/btsgchZr3Lo/WzTJMnNO36BOGHxkKkPO81/img.png)
+
 결과적으로 0.00n초로 조회 시간이 개선되었습니다.
 </div>
 </details>
@@ -228,31 +243,40 @@ ADD INDEX `record_date_AND_record_time_index` (`record_date` ASC, `record_time` 
 
 #### 문제점
 ![](https://file.notion.so/f/s/a73fe63b-fa41-4f6c-9003-7cc6f9075d6e/h.png?id=35e282d9-2a92-4ce0-abc3-b7f00bf8add9&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&expirationTimestamp=1690344000000&signature=qdJUMceHvLllLx1Rvhla63zBYy4K5XgS2oQCmhTazvg&downloadName=h.png)
+
 사용자가 에피소드를 조회하면 조회 데이터가 갱신되어야 합니다. 따라서 다음과 같은 과정을 거칩니다.
 1. 해당 에피소드를 이전에 조회한 적 있는지 조회
-2. 에피소드에 대한 사용자의 조회 데이터를 insert/update
-2-1. 조회한 적 있다면 기존 조회 데이터를 현재 시간으로 update
-2-2. 조회한 적 없다면 새로운 조회 데이터를 조회 테이블에 insert
+2. 에피소드에 대한 사용자의 조회 데이터를 insert/update <br>
+  2-1. 조회한 적 있다면 기존 조회 데이터를 현재 시간으로 update <br>
+  2-2. 조회한 적 없다면 새로운 조회 데이터를 조회 테이블에 insert
 
 이때, 만약 10명의 사용자가 특정 웹툰의 에피소드를 조회한다면 10개의 insert 쿼리가 나가고, 에피소드를 조회한 사용자가 1000명이라면 1000개의 insert 쿼리가 나갑니다. 이렇게 DB 접근이 많아 질 수록 사용되는 비용도 그만큼 증가하게 됩니다. 따라서 insert/update 쿼리를 줄이고자 했습니다.
 
 #### 해결
 ![](https://www.notion.so/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fe8c6b5ab-3528-474d-ad47-047e0fe319f8%2Fhs.svg?id=2cbc26ea-8dc6-4e9f-b33a-0d73300e3767&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&userId=660ca7a2-7a30-495f-b85f-55faf8b7a8d8&cache=v2)
+
 1.  사용자가 에피소드를 조회한다.
 2.  사용자가 해당 에피소드를 이전에 조회한 적 있는지 확인한다.
 3.  에피소드 조회 엔티티를 생성하여 메모리에 저장한다.
 4.  메모리에 일정 개수만큼 조회 데이터가 쌓였다면 한 번에 bulk insert한다.
 
 위와 같이 사용자의 에피소드에 대한 조회 정보를 바로 DB에 보내는 것이 아니라 메모리에 쌓아두고, 일정 개수가 쌓이면 DB에 한 번에 insert/update하는 것입니다.
+
 ![](https://www.notion.so/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fcd060f3b-0bd2-4af5-a285-9c8fc6499f55%2Fhoh.svg?id=22ea0d48-01e8-46cd-b952-ae9c13af38fd&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&userId=660ca7a2-7a30-495f-b85f-55faf8b7a8d8&cache=v2)
+
 메모리에 저장할 때 사용할 Map 자료구조의 형태는 위와 같습니다. HashMap 내부에 ConcurrentHashMap이 있는 형태인데(insert, update는 각각 Map 자료구조입니다.), insert Map은 사용자가 이전에 조회한적 없는 에피소드이기 때문에 새로 생성해야 하는 조회 데이터를 담고있고, update Map은 사용자가 이전에 조회한적 있는 에피소드이기 때문에 수정해줘야 하는 조회 데이터를 담고 있습니다. 이렇게 insert와 update Map으로 나눈 이유는 bulk insert와 bulk update의 SQL문이 조금 다르기 때문입니다.
 
 #### 결과
 ![](https://file.notion.so/f/s/e432cd3a-cd51-45f2-a662-1ccd25ea2d30/Untitled.png?id=e0553a65-e5bf-47b5-ae5a-f60b94859d56&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&expirationTimestamp=1690344000000&signature=MGRQrWqdMaFraFJbHzw1oIGCnMkcZIBLrMKJPKjCrho&downloadName=Untitled.png)
+
 우선 메모리에 데이터가 5000개 쌓였을 때 DB에 반영하도록 로직을 수정했습니다. 따라서 1초 동안 5000명의 서로다른 사용자가 에피소드를 조회하는 요청을 보냈습니다.
+
 ![](https://www.notion.so/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F4ad0bfb0-b6fa-480b-bbb2-fbeeccc28384%2FUntitled.png?id=7cb423a5-8b81-40eb-a084-f61f76f1e2d2&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&width=2000&userId=660ca7a2-7a30-495f-b85f-55faf8b7a8d8&cache=v2)
+
 기존에는 5000개의 insert 쿼리가 나갔지만, 1번의 insert 쿼리만 나가는 것을 확인할 수 있었습니다.
+
 ![](https://file.notion.so/f/s/bb2d886a-5904-45b7-9ae8-ec752a4a5d0e/Untitled.png?id=ac6e1f5a-f35c-4cd0-8ee5-3906a356cfba&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&expirationTimestamp=1690351200000&signature=6QjgJfGOZc24wqCCBN_wqogQHfTaJOQCuoswsjmhlnU&downloadName=Untitled.png)
+
 데이터도 정상적으로 5000개가 삽입된 것을 확인할 수 있었습니다.
 </div>
 </details>
@@ -264,14 +288,16 @@ ADD INDEX `record_date_AND_record_time_index` (`record_date` ASC, `record_time` 
 <details>
 <summary> <b> 확인 </b></summary>
 <div markdown="1">
+	
 #### 문제
 ![](https://blog.kakaocdn.net/dn/deiTX5/btsbQ2Mf9dj/kP9eCVKM1JYXIki0UJac91/img.jpg)
+
 웹툰 저장 API를 호출하면 흐름은 위와 같습니다.
 여기서 2, 3번 과정을 보면 썸네일 이미지를 S3에 업로드하고 URL을 DB에 저장합니다. 이 때, 2번 과정 이후에 예외가 발생하여 트랜잭션이 롤백되면 DB에 웹툰에 대한 정보는 저장되지 않지만, S3에는 여전히 썸네일 이미지가 저장되어 있습니다.
 즉, 사용하지 않는 이미지가 저장 공간을 차지하고 있는 것입니다.
 
 #### 해결
-스프링에서 제공하는 `@TransactionalEventListener`을 사용하여 문제를 해결하였다. 해당 어노테이션에는 `phase`라는 옵션이 존재하는데, 이 옵션 값을 설정하면 트랜잭션이 롤백되었을 때 이벤트를 호출할 수 있습니다.
+스프링에서 제공하는 `@TransactionalEventListener`을 사용하여 문제를 해결하였습니다. 해당 어노테이션에는 `phase`라는 옵션이 존재하는데, 이 옵션 값을 설정하면 트랜잭션이 롤백되었을 때 이벤트를 호출할 수 있습니다.
 ```java
 @Transactional  
 public  void  createComic(ComicCreateRequest comicCreateRequest, String loginId) { 
@@ -315,7 +341,9 @@ public  void  deleteFile(FileDeleteEvent fileDeleteEvent) {
 
 #### 해결
 **일관된 응답 형식**
+
 ![](https://file.notion.so/f/s/617d6afc-d1df-48be-a68a-a7c5ff1dc5da/Untitled.png?id=86054929-8a90-4f81-a134-a20496df794d&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&expirationTimestamp=1690372800000&signature=DuIMvTqRuc5o02nVKOTTNQWxRfxg0uLH5fgNwC6_Rhk&downloadName=Untitled.png)
+
 응답 형식은 위와 같은 형식을 갖습니다.
 -   `code` : 발생한 에러에 대한 정보를 나타내는 코드
 -   `message` : 에러에 대한 세부 메세지
@@ -396,11 +424,15 @@ public class GlobalExceptionHandler {
 }
 ```
 #### 결과
-1. 입력값 검증 예외 발생 시 
+1. 입력값 검증 예외 발생 시
+
 ![](https://file.notion.so/f/s/23664025-d310-4a8c-a48d-ad90b279b394/Untitled.png?id=6eb7d68d-f1d3-4e2c-86b2-b1e302a09c6c&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&expirationTimestamp=1690372800000&signature=EhK_43P11kMzqrWZKveBOPzg-X99Keckr1NVw6cfptc&downloadName=Untitled.png)
 
+
 2. 비즈니스 예외 발생 시
+
 ![](https://file.notion.so/f/s/bb4416ef-4eed-4e62-a822-fa43cbfa82e2/Untitled.png?id=72a7b76d-cda0-404d-b407-869dff48e86a&table=block&spaceId=92733449-5700-47a6-a223-50f1b43b5171&expirationTimestamp=1690372800000&signature=CA6fhpDTPr86ciLdJQlsdkx8ewnADk69rHYNSvJkTD8&downloadName=Untitled.png)
+
 </div>
 </details>
 <br>
@@ -417,7 +449,7 @@ API 문서화를 위해 다음 두 가지 선택지가 존재했습니다.
 - Swagger
 - Spring Rest Docs
 
-Swagger는 어노테이션을 기반으로 간단하게 적용할 수 있고 문서화된 UI가 가독성이 좋다는 장점이 있지만 비즈니스 로직과 문서화 로직이 섞이게 되고, 테스트 코드를 작성하지 않아도 문서화가 가능하여 문서의 정확성이 떨어질 수 있다는 단점이 있습니다.
+Swagger는 어노테이션을 기반으로 간단하게 적용할 수 있고 문서화된 UI가 가독성이 좋다는 장점이 있지만 비즈니스 로직과 문서화 코드가 섞이게 되고, 테스트 코드를 작성하지 않아도 문서화가 가능하여 문서의 정확성이 떨어질 수 있다는 단점이 있습니다.
 
 Spring Rest Docs는 테스트 코드를 작성해야 하기 때문에 API 문서가 신뢰성이 있고, 비즈니스 코드와 별개로 문서화 코드를 작성하기 때문에 비즈니스 로직과 문서화 코드가 섞이지 않는다는 장점이 있지만, 최종 문서를 개발자가 직접 작성해줘야 하고 개인적으로 문서 UI의 가독성이 떨어진다고 생각했습니다.
 
@@ -426,40 +458,40 @@ Swagger와 Spring Rest Docs의 장점만 적용하여 Spring Rest Docs 기반의
 
 #### 결과
 ```java
-	@Test
-	@DisplayName("회원가입 시 이메일 중복으로 실패한다.")
-	void signUpDuplicatedEmailFail() throws Exception {
+@Test
+@DisplayName("회원가입 시 이메일 중복으로 실패한다.")
+void signUpDuplicatedEmailFail() throws Exception {
 		
-		// 테스트 코드 생략
+    // 테스트 코드 생략
 
-		// docs
-		resultActions.andDo(
-				document("이메일 중복으로 회원가입 실패",
-						ResourceSnippetParameters.builder()
-								.tag(SIGNUP_TAG)
-								.requestSchema(Schema.schema(SIGNUP_REQ_SCHEMA))
-								.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
-						,
-						preprocessRequest(prettyPrint()),
-						preprocessResponse(prettyPrint()),
-						requestFields(
-								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
-						),
-						responseFields(
-								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
-								fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
-								fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
-						)
-				)
-		);
-	}
+    // docs
+    resultActions.andDo(
+        document("이메일 중복으로 회원가입 실패",
+	    ResourceSnippetParameters.builder()
+	        .tag(SIGNUP_TAG)
+		.requestSchema(Schema.schema(SIGNUP_REQ_SCHEMA))
+		.responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA)),
+		    preprocessRequest(prettyPrint()),
+		    preprocessResponse(prettyPrint()),
+		    requestFields(
+		        fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+			fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
+			fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+			fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
+			fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
+			),
+		    responseFields(
+		        fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+			fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+			fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
+		)
+	    )
+        );
+    }
  ```
 API 문서화를 위한 테스트 코드를 작성합니다.
 ![](https://blog.kakaocdn.net/dn/b3pTZs/btso12ewOYU/8EdbHVRZ3dAiGojgoX5IA0/img.png)
+
 Swagger UI로 API 문서가 생성됩니다.
 </div>
 </details>

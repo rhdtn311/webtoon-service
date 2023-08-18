@@ -1,7 +1,6 @@
 package com.kongtoon.domain.comic.controller;
 
 import com.kongtoon.common.security.annotation.LoginCheck;
-import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.comic.model.Genre;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
@@ -36,7 +35,7 @@ public class ComicController {
 	@PostMapping
 	public ResponseEntity<Void> createComic(
 			@ModelAttribute @Valid ComicRequest comicRequest,
-			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth,
+			UserAuthDTO userAuth,
 			HttpServletRequest httpServletRequest
 	) {
 		Long savedComicId = comicModifyService.createComic(comicRequest, userAuth.loginId());
@@ -51,7 +50,7 @@ public class ComicController {
 	public ResponseEntity<Void> updateComic(
 			@PathVariable @Positive Long comicId,
 			@ModelAttribute @Valid ComicRequest comicRequest,
-			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+			UserAuthDTO userAuth
 	) {
 		comicModifyService.updateComic(comicRequest, comicId, userAuth.loginId());
 
@@ -69,9 +68,7 @@ public class ComicController {
 
 	@LoginCheck(authority = UserAuthority.USER)
 	@GetMapping("/recent")
-	public ResponseEntity<List<ComicByViewRecentResponse>> getComicsByViewRecent(
-			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
-	) {
+	public ResponseEntity<List<ComicByViewRecentResponse>> getComicsByViewRecent(UserAuthDTO userAuth) {
 		List<ComicByViewRecentResponse> comicsByViewRecentResponses = comicReadService.getComicsByViewRecent(
 				userAuth.userId());
 

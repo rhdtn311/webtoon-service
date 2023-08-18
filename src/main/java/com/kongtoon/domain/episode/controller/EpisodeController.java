@@ -1,7 +1,6 @@
 package com.kongtoon.domain.episode.controller;
 
 import com.kongtoon.common.security.annotation.LoginCheck;
-import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.episode.model.dto.request.EpisodeRequest;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeDetailResponse;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses;
@@ -33,7 +32,7 @@ public class EpisodeController {
 	public ResponseEntity<Void> createEpisode(
 			@RequestParam @Positive Long comicId,
 			@ModelAttribute @Valid EpisodeRequest episodeRequest,
-			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth,
+			UserAuthDTO userAuth,
 			HttpServletRequest httpServletRequest
 	) {
 		Long savedEpisodeId = episodeModifyService.createEpisodeAndEpisodeImage(episodeRequest, comicId,
@@ -49,7 +48,7 @@ public class EpisodeController {
 	public ResponseEntity<Void> updateEpisode(
 			@PathVariable @Positive Long episodeId,
 			@ModelAttribute @Valid EpisodeRequest episodeRequest,
-			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+			UserAuthDTO userAuth
 	) {
 		episodeModifyService.updateEpisode(episodeRequest, episodeId, userAuth.loginId());
 
@@ -60,7 +59,7 @@ public class EpisodeController {
 	@GetMapping("/comics/{comicId}/episodes")
 	public ResponseEntity<EpisodeListResponses> getEpisodes(
 			@PathVariable @Positive Long comicId,
-			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+			UserAuthDTO userAuth
 	) {
 		EpisodeListResponses episodes = episodeReadService.getEpisodes(comicId, userAuth.loginId());
 		return ResponseEntity.ok(episodes);
@@ -80,7 +79,7 @@ public class EpisodeController {
 	@GetMapping("/episodes/{episodeId}/detail")
 	public ResponseEntity<EpisodeDetailResponse> getEpisodeDetail(
 			@PathVariable @Positive Long episodeId,
-			@SessionAttribute(value = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth
+			UserAuthDTO userAuth
 	) {
 		EpisodeDetailResponse episodeDetailResponse = episodeReadService.getEpisodeDetailResponse(
 				episodeId,

@@ -1,7 +1,6 @@
 package com.kongtoon.domain.author.controller;
 
 import com.kongtoon.common.security.annotation.LoginCheck;
-import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.author.model.dto.request.AuthorCreateRequest;
 import com.kongtoon.domain.author.model.dto.response.AuthorResponse;
 import com.kongtoon.domain.author.service.AuthorService;
@@ -29,7 +28,7 @@ public class AuthorController {
 	@PostMapping
 	public ResponseEntity<Void> createAuthor(
 			@RequestBody @Valid AuthorCreateRequest authorCreateRequest,
-			@SessionAttribute(name = UserSessionUtil.LOGIN_MEMBER_ID, required = false) UserAuthDTO userAuth,
+			UserAuthDTO userAuth,
 			HttpServletRequest httpServletRequest
 	) {
 		Long savedAuthId = authorService.createAuthor(authorCreateRequest, userAuth.loginId());

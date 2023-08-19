@@ -9,6 +9,7 @@ import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
 import com.kongtoon.domain.user.repository.UserRepository;
@@ -55,11 +56,13 @@ class UserControllerTest {
 	private static final String SIGNUP_SUMMARY = "회원가입 성공, 실패 APIs";
 	private static final String SIGNUP_REQ_SCHEMA = "SignupRequest";
 	private static final String SIGNUP_LOGIN_ID_REQ_FIELD = "loginId";
+	private static final String SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD = "loginId.idValue";
 	private static final String SIGNUP_NAME_REQ_FIELD = "name";
 	private static final String SIGNUP_EMAIL_REQ_FIELD = "email";
 	private static final String SIGNUP_NICKNAME_REQ_FIELD = "nickname";
 	private static final String SIGNUP_PASSWORD_REQ_FIELD = "password";
-	private static final String SIGNUP_LOGIN_ID_REQ_DESCRIPTION = "로그인ID";
+	private static final String SIGNUP_LOGIN_ID_REQ_DESCRIPTION = "로그인ID 정보";
+	private static final String SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION = "로그인ID 정보";
 	private static final String SIGNUP_NAME_REQ_DESCRIPTION = "이름";
 	private static final String SIGNUP_EMAIL_REQ_DESCRIPTION = "이메일";
 	private static final String SIGNUP_NICKNAME_REQ_DESCRIPTION = "닉네임";
@@ -81,8 +84,10 @@ class UserControllerTest {
 	private static final String LOGIN_SUMMARY = "로그인 성공, 실패 APIs";
 	private static final String LOGIN_REQ_SCHEMA = "LoginRequest";
 	private static final String LOGIN_LOGIN_ID_REQ_FIELD = "loginId";
+	private static final String LOGIN_LOGIN_ID_ID_VALUE_REQ_FIELD = "loginId.idValue";
 	private static final String LOGIN_PASSWORD_REQ_FIELD = "password";
-	private static final String LOGIN_LOGIN_ID_REQ_DESCRIPTION = "로그인ID";
+	private static final String LOGIN_LOGIN_ID_REQ_DESCRIPTION = "로그인ID 정보";
+	private static final String LOGIN_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION = "로그인ID";
 	private static final String LOGIN_PASSWORD_REQ_DESCRIPTION = "비밀번호";
 
 	private static final String LOGOUT_TAG = "로그아웃";
@@ -130,7 +135,8 @@ class UserControllerTest {
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
@@ -148,12 +154,12 @@ class UserControllerTest {
 	void signUpDuplicatedEmailFail() throws Exception {
 		// given
 		String savedEmail = "savedEmail@email.com";
-		String savedLoginId = "savedLoginId";
+		LoginId savedLoginId = new LoginId("savedLoginId");
 
 		User user = createUser(savedEmail, savedLoginId);
 		userRepository.save(user);
 
-		String newLoginId = "newLoginId";
+		LoginId newLoginId = new LoginId("newLoginId");
 		SignupRequest signupRequest = createSignupRequest(newLoginId, savedEmail);
 
 		long beforeUserCount = userRepository.count();
@@ -182,7 +188,8 @@ class UserControllerTest {
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
@@ -202,7 +209,7 @@ class UserControllerTest {
 	void signUpDuplicatedLoginIdFail() throws Exception {
 		// given
 		String savedEmail = "savedEmail@email.com";
-		String savedLoginId = "savedLoginId";
+		LoginId savedLoginId = new LoginId("savedLoginId");
 
 		User user = createUser(savedEmail, savedLoginId);
 		userRepository.save(user);
@@ -236,7 +243,8 @@ class UserControllerTest {
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
@@ -257,7 +265,7 @@ class UserControllerTest {
 	void signUpInvalidEmailFail(String invalidEmail) throws Exception {
 
 		// given
-		String validLoginId = "loginId";
+		LoginId validLoginId = new LoginId("loginId");
 		SignupRequest signupRequest = createSignupRequest(validLoginId, invalidEmail);
 		long beforeUserCount = userRepository.count();
 
@@ -287,7 +295,8 @@ class UserControllerTest {
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
@@ -339,12 +348,12 @@ class UserControllerTest {
 	void checkDuplicateLoginIdFail() throws Exception {
 
 		// given
-		String loginId = "dupLoginId";
+		LoginId loginId = new LoginId("dupLoginId");
 		User user = createUser("email@email.com", loginId);
 		userRepository.save(user);
 
 		// when
-		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-id/{loginId}", loginId));
+		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-id/{loginId}", loginId.getIdValue()));
 
 		// then
 		resultActions.andExpect(status().isConflict());
@@ -410,7 +419,8 @@ class UserControllerTest {
 
 		// given
 		String email = "dupEmail@email.com";
-		User user = createUser(email, "loginId");
+		LoginId loginId = new LoginId("loginId");
+		User user = createUser(email, loginId);
 		userRepository.save(user);
 
 		// when
@@ -472,7 +482,8 @@ class UserControllerTest {
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(LOGIN_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(LOGIN_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_PASSWORD_REQ_DESCRIPTION)
 						)
 				)
@@ -507,7 +518,8 @@ class UserControllerTest {
 						preprocessRequest(prettyPrint()),
 						preprocessResponse(prettyPrint()),
 						requestFields(
-								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
+								fieldWithPath(LOGIN_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(LOGIN_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_PASSWORD_REQ_DESCRIPTION)
 						),
 						responseFields(
@@ -557,9 +569,9 @@ class UserControllerTest {
 	@Test
 	@DisplayName("로그아웃에 성공한다.")
 	void logoutSuccess() throws Exception {
-
 		// given
-		UserAuthDTO user = new UserAuthDTO(1L, "loginId", UserAuthority.USER);
+		LoginId loginId = new LoginId("loginId");
+		UserAuthDTO user = new UserAuthDTO(1L, loginId, UserAuthority.USER);
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, user);
 

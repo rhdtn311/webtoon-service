@@ -6,6 +6,7 @@ import com.kongtoon.common.security.PasswordEncoder;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -39,7 +40,7 @@ class UserServiceTest {
 	@DisplayName("회원가입에 성공한다.")
 	void signupSuccess() {
 		// given
-		String loginId = "loginId";
+		LoginId loginId = new LoginId("loginId");
 		String name = "name";
 		String email = "email@email.com";
 		String nickname = "nickname";
@@ -70,7 +71,7 @@ class UserServiceTest {
 	@DisplayName("회원가입 시 이메일 중복으로 실패한다.")
 	void signUpDuplicatedEmailFail() {
 		// given
-		String loginId = "loginId";
+		LoginId loginId = new LoginId("loginId");
 		String name = "name";
 		String email = "email@email.com";
 		String nickname = "nickname";
@@ -95,7 +96,7 @@ class UserServiceTest {
 	@DisplayName("회원가입 시 로그인 아이디 중복으로 실패한다.")
 	void signUpDuplicatedLoginIdFail() {
 		// given
-		String loginId = "loginId";
+		LoginId loginId = new LoginId("loginId");
 		String name = "name";
 		String email = "email@email.com";
 		String nickname = "nickname";

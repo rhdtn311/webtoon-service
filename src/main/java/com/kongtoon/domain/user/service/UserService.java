@@ -1,18 +1,17 @@
 package com.kongtoon.domain.user.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.common.security.PasswordEncoder;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +48,7 @@ public class UserService {
 		return user.getId();
 	}
 
-	public void validateDuplicateLoginId(String loginId) {
+	public void validateDuplicateLoginId(LoginId loginId) {
 		if (userRepository.existsByLoginId(loginId)) {
 			throw new BusinessException(ErrorCode.DUPLICATE_LOGIN_ID);
 		}

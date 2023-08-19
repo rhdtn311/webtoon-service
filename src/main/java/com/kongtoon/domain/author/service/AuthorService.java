@@ -1,12 +1,5 @@
 package com.kongtoon.domain.author.service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.domain.author.model.Author;
@@ -20,11 +13,17 @@ import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.episode.repository.EpisodeRepository;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
 import com.kongtoon.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +39,7 @@ public class AuthorService {
 	private final EpisodeRepository episodeRepository;
 
 	@Transactional
-	public Long createAuthor(AuthorCreateRequest authorCreateRequest, String loginId) {
+	public Long createAuthor(AuthorCreateRequest authorCreateRequest, LoginId loginId) {
 		User user = userRepository.findByLoginId(loginId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 

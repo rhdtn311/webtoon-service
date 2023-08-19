@@ -1,24 +1,14 @@
 package com.kongtoon.domain.user.model;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-
 import com.kongtoon.domain.BaseEntity;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -31,8 +21,8 @@ public class User extends BaseEntity {
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "login_id", unique = true, length = 15, nullable = false)
-	private String loginId;
+	@Embedded
+	private LoginId loginId;
 
 	@Column(name = "name", length = 20, nullable = false)
 	private String name;
@@ -56,7 +46,7 @@ public class User extends BaseEntity {
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
 
-	public User(String loginId, String name, String email, String nickname, String password, UserAuthority authority,
+	public User(LoginId loginId, String name, String email, String nickname, String password, UserAuthority authority,
 			boolean setAlarm) {
 		this.loginId = loginId;
 		this.name = name;

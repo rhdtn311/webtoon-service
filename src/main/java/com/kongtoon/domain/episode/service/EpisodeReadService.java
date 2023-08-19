@@ -1,14 +1,5 @@
 package com.kongtoon.domain.episode.service;
 
-import static com.kongtoon.domain.episode.model.dto.response.EpisodeDetailResponse.*;
-import static com.kongtoon.domain.episode.model.dto.response.EpisodeResponse.*;
-
-import java.util.List;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.domain.comic.model.Comic;
@@ -30,13 +21,21 @@ import com.kongtoon.domain.follow.repository.FollowRepository;
 import com.kongtoon.domain.like.model.LikeType;
 import com.kongtoon.domain.like.repository.LikeRepository;
 import com.kongtoon.domain.star.repository.StarRepository;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import com.kongtoon.domain.view.model.View;
 import com.kongtoon.domain.view.repository.ViewRepository;
 import com.kongtoon.domain.view.service.event.EpisodeViewedEvent;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import static com.kongtoon.domain.episode.model.dto.response.EpisodeDetailResponse.*;
+import static com.kongtoon.domain.episode.model.dto.response.EpisodeResponse.EpisodeImageResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +58,7 @@ public class EpisodeReadService {
 	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional(readOnly = true)
-	public EpisodeListResponses getEpisodes(Long comicId, String loginId) {
+	public EpisodeListResponses getEpisodes(Long comicId, LoginId loginId) {
 		List<Episode> episodes = episodeRepository.findByComicIdWithComicAndAuthor(comicId);
 		Comic comic = getComic(comicId);
 		User user = getUser(loginId);
@@ -85,7 +84,7 @@ public class EpisodeReadService {
 	}
 
 	@Transactional(readOnly = true)
-	public EpisodeDetailResponse getEpisodeDetailResponse(Long episodeId, String loginId) {
+	public EpisodeDetailResponse getEpisodeDetailResponse(Long episodeId, LoginId loginId) {
 		User user = getUser(loginId);
 		Episode episode = getEpisodeWithComic(episodeId);
 		Comic comic = episode.getComic();
@@ -141,7 +140,7 @@ public class EpisodeReadService {
 				.orElseThrow(() -> new BusinessException(ErrorCode.COMIC_NOT_FOUND));
 	}
 
-	private User getUser(String loginId) {
+	private User getUser(LoginId loginId) {
 		return userRepository.findByLoginId(loginId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}

@@ -23,7 +23,7 @@ public class ViewMapCache implements ViewCache {
 
     @Override
     public void save(User user, Episode episode) {
-        String subKey = createKey(user.getLoginId(), episode.getId());
+        String subKey = createKey(user.getLoginId().getIdValue(), episode.getId());
         Map<String, View> viewsForInsert = viewCache.get(INSERT_MAP_MAIN_KEY);
         Map<String, View> viewsForUpdate = viewCache.get(UPDATE_MAP_MAIN_KEY);
 

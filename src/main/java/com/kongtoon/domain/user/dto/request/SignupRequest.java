@@ -1,19 +1,19 @@
 package com.kongtoon.domain.user.dto.request;
 
+import com.kongtoon.common.constant.RegexConst;
+import com.kongtoon.common.validation.Email;
+import com.kongtoon.domain.user.model.LoginId;
+import com.kongtoon.domain.user.model.User;
+import com.kongtoon.domain.user.model.UserAuthority;
+import org.hibernate.validator.constraints.Length;
+
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
-import org.hibernate.validator.constraints.Length;
-
-import com.kongtoon.common.constant.RegexConst;
-import com.kongtoon.common.validation.Email;
-import com.kongtoon.domain.user.model.User;
-import com.kongtoon.domain.user.model.UserAuthority;
-
 public record SignupRequest(
-		@NotBlank
-		@Length(min = 5, max = 20)
-		String loginId,
+		@Valid
+		LoginId loginId,
 
 		@NotBlank
 		String name,

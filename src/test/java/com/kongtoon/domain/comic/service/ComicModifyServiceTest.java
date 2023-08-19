@@ -14,6 +14,7 @@ import com.kongtoon.domain.comic.model.ThumbnailType;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -63,7 +64,7 @@ class ComicModifyServiceTest {
 
         // given
         ComicRequest comicRequest = createComicRequest();
-        String loginId = "loginId";
+        LoginId loginId = new LoginId("loginId");
         User user = createUser("email@email.com", loginId);
         Author author = createAuthor(user);
         String uploadedThumbnailImageUrl1 = "uploadedThumbnailImageUrl1";
@@ -105,7 +106,7 @@ class ComicModifyServiceTest {
 
         // given
         ComicRequest comicRequest = createComicRequest();
-        String loginId = "loginId";
+        LoginId loginId = new LoginId("loginId");
 
         when(userRepository.findByLoginId(loginId))
                 .thenReturn(Optional.empty());
@@ -122,7 +123,7 @@ class ComicModifyServiceTest {
 
         // given
         ComicRequest comicRequest = createComicRequest();
-        String loginId = "loginId";
+        LoginId loginId = new LoginId("loginId");
         User user = createUser("email@email.com", loginId);
 
         when(userRepository.findByLoginId(loginId))
@@ -144,7 +145,7 @@ class ComicModifyServiceTest {
 
         // given
         ComicRequest comicRequest = createComicRequest();
-        String loginId = "loginId";
+        LoginId loginId = new LoginId("loginId");
         User user = createUser("email@email.com", loginId);
         Author author = createAuthor(user);
 

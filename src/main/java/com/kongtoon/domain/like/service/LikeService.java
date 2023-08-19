@@ -1,8 +1,5 @@
 package com.kongtoon.domain.like.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.domain.episode.repository.EpisodeRepository;
@@ -10,10 +7,12 @@ import com.kongtoon.domain.like.model.Like;
 import com.kongtoon.domain.like.model.LikeType;
 import com.kongtoon.domain.like.model.dto.response.LikeResponse;
 import com.kongtoon.domain.like.repository.LikeRepository;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +23,7 @@ public class LikeService {
 	private final EpisodeRepository episodeRepository;
 
 	@Transactional
-	public LikeResponse createEpisodeLike(Long episodeId, String loginId) {
+	public LikeResponse createEpisodeLike(Long episodeId, LoginId loginId) {
 		User user = getUser(loginId);
 
 		verityExistsEpisode(episodeId);
@@ -39,7 +38,7 @@ public class LikeService {
 	}
 
 	@Transactional
-	public LikeResponse deleteEpisodeLike(Long episodeId, String loginId) {
+	public LikeResponse deleteEpisodeLike(Long episodeId, LoginId loginId) {
 		User user = getUser(loginId);
 
 		likeRepository.findByUserAndLikeTypeAndReferenceId(user, LikeType.EPISODE, episodeId)
@@ -66,7 +65,7 @@ public class LikeService {
 		}
 	}
 
-	private User getUser(String loginId) {
+	private User getUser(LoginId loginId) {
 		return userRepository.findByLoginId(loginId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}

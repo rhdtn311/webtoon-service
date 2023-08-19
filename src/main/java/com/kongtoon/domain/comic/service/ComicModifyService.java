@@ -1,12 +1,5 @@
 package com.kongtoon.domain.comic.service;
 
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-
 import com.kongtoon.common.aws.FileStorage;
 import com.kongtoon.common.aws.ImageFileType;
 import com.kongtoon.common.aws.event.FileDeleteAfterCommitEvent;
@@ -21,10 +14,15 @@ import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest.ThumbnailRequest;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +38,7 @@ public class ComicModifyService {
 	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional
-	public Long createComic(ComicRequest comicRequest, String loginId) {
+	public Long createComic(ComicRequest comicRequest, LoginId loginId) {
 		User user = getUser(loginId);
 		Author author = getAuthor(user);
 
@@ -64,7 +62,7 @@ public class ComicModifyService {
 	}
 
 	@Transactional
-	public void updateComic(ComicRequest comicRequest, Long comicId, String loginId) {
+	public void updateComic(ComicRequest comicRequest, Long comicId, LoginId loginId) {
 		User user = getUser(loginId);
 		Comic comic = getComicWithAuthor(comicId);
 		Author author = comic.getAuthor();
@@ -115,7 +113,7 @@ public class ComicModifyService {
 				.orElseThrow(() -> new BusinessException(ErrorCode.AUTHOR_NOT_FOUND));
 	}
 
-	private User getUser(String loginId) {
+	private User getUser(LoginId loginId) {
 		return userRepository.findByLoginId(loginId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}

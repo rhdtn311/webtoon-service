@@ -1,12 +1,5 @@
 package com.kongtoon.domain.episode.service;
 
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-
 import com.kongtoon.common.aws.FileStorage;
 import com.kongtoon.common.aws.FileType;
 import com.kongtoon.common.aws.ImageFileType;
@@ -22,10 +15,15 @@ import com.kongtoon.domain.episode.model.dto.request.EpisodeRequest;
 import com.kongtoon.domain.episode.model.dto.request.EpisodeRequest.EpisodeContentRequest;
 import com.kongtoon.domain.episode.repository.EpisodeImageRepository;
 import com.kongtoon.domain.episode.repository.EpisodeRepository;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +40,7 @@ public class EpisodeModifyService {
 	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional
-	public Long createEpisodeAndEpisodeImage(EpisodeRequest episodeRequest, Long comicId, String loginId) {
+	public Long createEpisodeAndEpisodeImage(EpisodeRequest episodeRequest, Long comicId, LoginId loginId) {
 		User user = getUser(loginId);
 		Comic comic = getComicWithAuthor(comicId);
 
@@ -81,7 +79,7 @@ public class EpisodeModifyService {
 	}
 
 	@Transactional
-	public void updateEpisode(EpisodeRequest episodeRequest, Long episodeId, String loginId) {
+	public void updateEpisode(EpisodeRequest episodeRequest, Long episodeId, LoginId loginId) {
 		User user = getUser(loginId);
 		Episode episode = getEpisodeWithComicAndAuthor(episodeId);
 		Comic comic = episode.getComic();
@@ -218,7 +216,7 @@ public class EpisodeModifyService {
 		}
 	}
 
-	private User getUser(String loginId) {
+	private User getUser(LoginId loginId) {
 		return userRepository.findByLoginId(loginId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}

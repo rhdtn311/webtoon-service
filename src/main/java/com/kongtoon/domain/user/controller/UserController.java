@@ -1,13 +1,13 @@
 package com.kongtoon.domain.user.controller;
 
 import com.kongtoon.common.session.UserSessionUtil;
-import com.kongtoon.common.validation.Email;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.Email;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.net.URI;
 
 @RestController
@@ -60,7 +59,7 @@ public class UserController {
 
 	@PostMapping("/signup/check-duplicate-id/{loginId}")
 	public ResponseEntity<Void> checkDuplicateId(
-			@PathVariable @NotBlank @Length(min = 5, max = 20) String loginId
+			@PathVariable @Valid LoginId loginId
 	) {
 		userService.validateDuplicateLoginId(loginId);
 
@@ -69,7 +68,7 @@ public class UserController {
 
 	@PostMapping("/signup/check-duplicate-email/{email}")
 	public ResponseEntity<Void> checkDuplicateEmail(
-			@PathVariable @NotBlank @Email String email
+			@PathVariable @Valid Email email
 	) {
 		userService.validateDuplicateEmail(email);
 

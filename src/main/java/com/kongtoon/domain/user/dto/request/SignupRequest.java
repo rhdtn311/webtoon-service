@@ -1,37 +1,28 @@
 package com.kongtoon.domain.user.dto.request;
 
+import com.kongtoon.domain.user.model.*;
+
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-
-import org.hibernate.validator.constraints.Length;
-
-import com.kongtoon.common.constant.RegexConst;
-import com.kongtoon.common.validation.Email;
-import com.kongtoon.domain.user.model.User;
-import com.kongtoon.domain.user.model.UserAuthority;
 
 public record SignupRequest(
-		@NotBlank
-		@Length(min = 5, max = 20)
-		String loginId,
+		@Valid
+		LoginId loginId,
 
 		@NotBlank
 		String name,
 
-		@Email
-		@NotBlank
-		String email,
+		@Valid
+		Email email,
 
 		@NotBlank
 		String nickname,
 
-		@NotBlank
-		@Pattern(regexp = RegexConst.PASSWORD_VALID_REGEX, message = "비밀번호 형식이 일치하지 않습니다.")
-		@Length(min = 8, max = 30)
-		String password
+		@Valid
+		Password password
 ) {
 
-	public User toEntity(String encryptPassword) {
-		return new User(loginId, name, email, nickname, encryptPassword, UserAuthority.USER, true);
+	public User toEntity() {
+		return new User(loginId, name, email, nickname, password, UserAuthority.USER, true);
 	}
 }

@@ -15,6 +15,7 @@ import com.kongtoon.domain.comic.model.Comic;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
 import com.kongtoon.domain.user.repository.UserRepository;
@@ -199,7 +200,7 @@ class ComicControllerTest {
         // given
         ComicRequest comicRequest = createComicRequest();
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(0L, "notExistLoginId", UserAuthority.AUTHOR));
+        session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(0L, new LoginId("notExistLoginId"), UserAuthority.AUTHOR));
 
         MockMultipartFile thumbnailRequestThumbnailImageSmallFieldImage
                 = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");

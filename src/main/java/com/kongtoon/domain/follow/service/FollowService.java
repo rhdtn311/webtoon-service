@@ -1,10 +1,5 @@
 package com.kongtoon.domain.follow.service;
 
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kongtoon.common.exception.BusinessException;
 import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.domain.comic.model.Comic;
@@ -12,10 +7,14 @@ import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.follow.model.Follow;
 import com.kongtoon.domain.follow.model.dto.response.FollowResponse;
 import com.kongtoon.domain.follow.repository.FollowRepository;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +25,7 @@ public class FollowService {
 	private final UserRepository userRepository;
 
 	@Transactional
-	public FollowResponse createFollow(Long comicId, String loginId) {
+	public FollowResponse createFollow(Long comicId, LoginId loginId) {
 		User user = getUser(loginId);
 		Comic comic = getComic(comicId);
 
@@ -46,7 +45,7 @@ public class FollowService {
 	}
 
 	@Transactional
-	public FollowResponse deleteFollow(Long comicId, String loginId) {
+	public FollowResponse deleteFollow(Long comicId, LoginId loginId) {
 		User user = getUser(loginId);
 		Comic comic = getComic(comicId);
 
@@ -67,7 +66,7 @@ public class FollowService {
 		return new Follow(user, comic);
 	}
 
-	private User getUser(String loginId) {
+	private User getUser(LoginId loginId) {
 		return userRepository.findByLoginId(loginId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}

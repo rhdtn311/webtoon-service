@@ -1,10 +1,15 @@
 package com.kongtoon.domain.user.dto.request;
 
-import javax.validation.constraints.NotBlank;
+import com.kongtoon.domain.user.model.LoginId;
+import com.kongtoon.domain.user.model.Password;
+
+import javax.validation.Valid;
 
 public record LoginRequest(
-		@NotBlank
-		String loginId,
-		@NotBlank
-		String password) {
+		@Valid
+		LoginId loginId,
+
+		@Valid
+		Password password
+) {
 }

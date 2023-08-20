@@ -14,6 +14,8 @@ import com.kongtoon.domain.comic.model.ThumbnailType;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
+import com.kongtoon.domain.user.model.Email;
+import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -63,8 +65,9 @@ class ComicModifyServiceTest {
 
         // given
         ComicRequest comicRequest = createComicRequest();
-        String loginId = "loginId";
-        User user = createUser("email@email.com", loginId);
+        LoginId loginId = new LoginId("loginId");
+        Email email = new Email("email@email.com");
+        User user = createUser(email, loginId);
         Author author = createAuthor(user);
         String uploadedThumbnailImageUrl1 = "uploadedThumbnailImageUrl1";
         String uploadedThumbnailImageUrl2 = "uploadedThumbnailImageUrl2";
@@ -105,7 +108,7 @@ class ComicModifyServiceTest {
 
         // given
         ComicRequest comicRequest = createComicRequest();
-        String loginId = "loginId";
+        LoginId loginId = new LoginId("loginId");
 
         when(userRepository.findByLoginId(loginId))
                 .thenReturn(Optional.empty());
@@ -122,8 +125,9 @@ class ComicModifyServiceTest {
 
         // given
         ComicRequest comicRequest = createComicRequest();
-        String loginId = "loginId";
-        User user = createUser("email@email.com", loginId);
+        LoginId loginId = new LoginId("loginId");
+        Email email = new Email("email@email.com");
+        User user = createUser(email, loginId);
 
         when(userRepository.findByLoginId(loginId))
                 .thenReturn(Optional.of(user));
@@ -144,8 +148,9 @@ class ComicModifyServiceTest {
 
         // given
         ComicRequest comicRequest = createComicRequest();
-        String loginId = "loginId";
-        User user = createUser("email@email.com", loginId);
+        LoginId loginId = new LoginId("loginId");
+        Email email = new Email("email@email.com");
+        User user = createUser(email, loginId);
         Author author = createAuthor(user);
 
         when(userRepository.findByLoginId(loginId))

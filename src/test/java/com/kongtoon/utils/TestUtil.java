@@ -5,8 +5,7 @@ import com.kongtoon.domain.comic.model.*;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
-import com.kongtoon.domain.user.model.User;
-import com.kongtoon.domain.user.model.UserAuthority;
+import com.kongtoon.domain.user.model.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,37 +18,37 @@ public class TestUtil {
 
 	public static SignupRequest createSignupRequest() {
 		return new SignupRequest(
-				"loginId",
+				new LoginId("loginId"),
 				"Name",
-				"email@email.com",
+				new Email("email@email.com"),
 				"nickname",
-				"password123!"
+				new Password("password123!")
 		);
 	}
 
-	public static SignupRequest createSignupRequest(String loginId, String email) {
+	public static SignupRequest createSignupRequest(LoginId loginId, Email email) {
 		return new SignupRequest(
 				loginId,
 				"Name",
 				email,
 				"nickname",
-				"password123!"
+				new Password("password123!")
 		);
 	}
 
-	public static User createUser(String email, String loginId) {
+	public static User createUser(Email email, LoginId loginId) {
 		return new User(
 				loginId,
 				"Name",
 				email,
 				"nickname",
-				"password123!",
+				new Password("password123!"),
 				UserAuthority.USER,
 				true
 		);
 	}
 
-	public static User createUser(String email, String loginId, String password) {
+	public static User createUser(Email email, LoginId loginId, Password password) {
 		return new User(
 				loginId,
 				"Name",
@@ -63,11 +62,11 @@ public class TestUtil {
 
 	public static User createUser(UserAuthority userAuthority) {
 		return new User(
-				"loginId",
+				new LoginId("loginId"),
 				"Name",
-				"email@email.com",
+				new Email("email@email.com"),
 				"nickname",
-				"password",
+				new Password("password123!"),
 				userAuthority,
 				true
 		);
@@ -75,7 +74,7 @@ public class TestUtil {
 
 	public static LoginRequest createLoginRequest() {
 		return new LoginRequest(
-				"loginId", "password"
+				new LoginId("loginId"), new Password("password123!")
 		);
 	}
 

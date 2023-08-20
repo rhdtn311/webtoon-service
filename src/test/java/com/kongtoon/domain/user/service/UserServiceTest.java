@@ -6,6 +6,9 @@ import com.kongtoon.common.security.PasswordEncoder;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.Email;
+import com.kongtoon.domain.user.model.LoginId;
+import com.kongtoon.domain.user.model.Password;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -39,19 +42,17 @@ class UserServiceTest {
 	@DisplayName("회원가입에 성공한다.")
 	void signupSuccess() {
 		// given
-		String loginId = "loginId";
+		LoginId loginId = new LoginId("loginId");
 		String name = "name";
-		String email = "email@email.com";
+		Email email = new Email("email@email.com");
 		String nickname = "nickname";
-		String password = "password";
+		Password password = new Password("password");
 		String encryptedPassword = "encryptedPassword";
 
 		SignupRequest signupRequest = new SignupRequest(
 				loginId, name, email, nickname, password
 		);
 
-		when(passwordEncoder.encrypt(password))
-				.thenReturn(encryptedPassword);
 		when(userRepository.existsByLoginId(loginId))
 				.thenReturn(false);
 		when(userRepository.existsByEmail(email))
@@ -70,11 +71,11 @@ class UserServiceTest {
 	@DisplayName("회원가입 시 이메일 중복으로 실패한다.")
 	void signUpDuplicatedEmailFail() {
 		// given
-		String loginId = "loginId";
+		LoginId loginId = new LoginId("loginId");
 		String name = "name";
-		String email = "email@email.com";
+		Email email = new Email("email@email.com");
 		String nickname = "nickname";
-		String password = "password";
+		Password password = new Password("password");
 
 		SignupRequest signupRequest = new SignupRequest(
 				loginId, name, email, nickname, password
@@ -95,11 +96,11 @@ class UserServiceTest {
 	@DisplayName("회원가입 시 로그인 아이디 중복으로 실패한다.")
 	void signUpDuplicatedLoginIdFail() {
 		// given
-		String loginId = "loginId";
+		LoginId loginId = new LoginId("loginId");
 		String name = "name";
-		String email = "email@email.com";
+		Email email = new Email("email@email.com");
 		String nickname = "nickname";
-		String password = "password";
+		Password password = new Password("password");
 
 		SignupRequest signupRequest = new SignupRequest(
 				loginId, name, email, nickname, password
@@ -123,13 +124,14 @@ class UserServiceTest {
 	@DisplayName("로그인에 성공한다.")
 	void loginSuccess() {
 		// given
+		Email email = new Email("email@email.com");
 		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser("email@email.com", loginRequest.loginId(), loginRequest.password());
+		User user = createUser(email, loginRequest.loginId(), loginRequest.password());
 		UserAuthDTO correctResult = new UserAuthDTO(0L, user.getLoginId(), user.getAuthority());
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
 				.thenReturn(Optional.of(user));
-		when(passwordEncoder.isMatch(loginRequest.password(), user.getPassword()))
+		when(passwordEncoder.isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue()))
 				.thenReturn(true);
 
 		// when
@@ -137,7 +139,7 @@ class UserServiceTest {
 
 		// then
 		verify(userRepository).findByLoginId(loginRequest.loginId());
-		verify(passwordEncoder).isMatch(loginRequest.password(), user.getPassword());
+		verify(passwordEncoder).isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue());
 
 		assertThat(result).usingRecursiveComparison()
 				.ignoringFields("userId")
@@ -165,12 +167,14 @@ class UserServiceTest {
 	@DisplayName("로그인시 비밀번호 불일치로 실패한다.")
 	void loginPasswordMismatchFail() {
 		// given
+		Email email = new Email("email@email.com");
 		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser("email@email.com", loginRequest.loginId(), "mismatchPassword");
+		Password mismatchPassword = new Password("mismatchPassword");
+		User user = createUser(email, loginRequest.loginId(), mismatchPassword);
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
 				.thenReturn(Optional.of(user));
-		when(passwordEncoder.isMatch(loginRequest.password(), user.getPassword()))
+		when(passwordEncoder.isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue()))
 				.thenReturn(false);
 
 		// when, hen
@@ -179,6 +183,6 @@ class UserServiceTest {
 				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.LOGIN_FAIL);
 
 		verify(userRepository).findByLoginId(loginRequest.loginId());
-		verify(passwordEncoder).isMatch(loginRequest.password(), user.getPassword());
+		verify(passwordEncoder).isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue());
 	}
 }

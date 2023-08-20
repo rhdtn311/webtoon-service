@@ -1,16 +1,17 @@
 package com.kongtoon.domain.user.repository;
 
-import java.util.Optional;
-
+import com.kongtoon.domain.user.model.Email;
+import com.kongtoon.domain.user.model.LoginId;
+import com.kongtoon.domain.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.kongtoon.domain.user.model.User;
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-	Optional<User> findByLoginId(String loginId);
+	Optional<User> findByLoginId(LoginId loginId);
 
-	boolean existsByLoginId(String loginId);
+	boolean existsByLoginId(LoginId loginId);
 
-	boolean existsByEmail(String email);
+	boolean existsByEmail(Email email);
 }

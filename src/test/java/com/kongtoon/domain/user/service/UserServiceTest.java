@@ -6,6 +6,7 @@ import com.kongtoon.common.security.PasswordEncoder;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
@@ -42,7 +43,7 @@ class UserServiceTest {
 		// given
 		LoginId loginId = new LoginId("loginId");
 		String name = "name";
-		String email = "email@email.com";
+		Email email = new Email("email@email.com");
 		String nickname = "nickname";
 		String password = "password";
 		String encryptedPassword = "encryptedPassword";
@@ -73,7 +74,7 @@ class UserServiceTest {
 		// given
 		LoginId loginId = new LoginId("loginId");
 		String name = "name";
-		String email = "email@email.com";
+		Email email = new Email("email@email.com");
 		String nickname = "nickname";
 		String password = "password";
 
@@ -98,7 +99,7 @@ class UserServiceTest {
 		// given
 		LoginId loginId = new LoginId("loginId");
 		String name = "name";
-		String email = "email@email.com";
+		Email email = new Email("email@email.com");
 		String nickname = "nickname";
 		String password = "password";
 
@@ -124,8 +125,9 @@ class UserServiceTest {
 	@DisplayName("로그인에 성공한다.")
 	void loginSuccess() {
 		// given
+		Email email = new Email("email@email.com");
 		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser("email@email.com", loginRequest.loginId(), loginRequest.password());
+		User user = createUser(email, loginRequest.loginId(), loginRequest.password());
 		UserAuthDTO correctResult = new UserAuthDTO(0L, user.getLoginId(), user.getAuthority());
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
@@ -166,8 +168,9 @@ class UserServiceTest {
 	@DisplayName("로그인시 비밀번호 불일치로 실패한다.")
 	void loginPasswordMismatchFail() {
 		// given
+		Email email = new Email("email@email.com");
 		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser("email@email.com", loginRequest.loginId(), "mismatchPassword");
+		User user = createUser(email, loginRequest.loginId(), "mismatchPassword");
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
 				.thenReturn(Optional.of(user));

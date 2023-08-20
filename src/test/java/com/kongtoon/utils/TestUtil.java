@@ -5,6 +5,7 @@ import com.kongtoon.domain.comic.model.*;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
@@ -22,13 +23,13 @@ public class TestUtil {
 		return new SignupRequest(
 				new LoginId("loginId"),
 				"Name",
-				"email@email.com",
+				new Email("email@email.com"),
 				"nickname",
 				"password123!"
 		);
 	}
 
-	public static SignupRequest createSignupRequest(LoginId loginId, String email) {
+	public static SignupRequest createSignupRequest(LoginId loginId, Email email) {
 		return new SignupRequest(
 				loginId,
 				"Name",
@@ -38,7 +39,7 @@ public class TestUtil {
 		);
 	}
 
-	public static User createUser(String email, LoginId loginId) {
+	public static User createUser(Email email, LoginId loginId) {
 		return new User(
 				loginId,
 				"Name",
@@ -50,7 +51,7 @@ public class TestUtil {
 		);
 	}
 
-	public static User createUser(String email, LoginId loginId, String password) {
+	public static User createUser(Email email, LoginId loginId, String password) {
 		return new User(
 				loginId,
 				"Name",
@@ -66,7 +67,7 @@ public class TestUtil {
 		return new User(
 				new LoginId("loginId"),
 				"Name",
-				"email@email.com",
+				new Email("email@email.com"),
 				"nickname",
 				"password",
 				userAuthority,

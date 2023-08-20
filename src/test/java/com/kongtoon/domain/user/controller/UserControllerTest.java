@@ -9,6 +9,7 @@ import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
@@ -16,7 +17,7 @@ import com.kongtoon.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,6 +32,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.kongtoon.utils.TestConst.*;
@@ -59,12 +61,14 @@ class UserControllerTest {
 	private static final String SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD = "loginId.idValue";
 	private static final String SIGNUP_NAME_REQ_FIELD = "name";
 	private static final String SIGNUP_EMAIL_REQ_FIELD = "email";
+	private static final String SIGNUP_EMAIL_ADDRESS_REQ_FIELD = "email.address";
 	private static final String SIGNUP_NICKNAME_REQ_FIELD = "nickname";
 	private static final String SIGNUP_PASSWORD_REQ_FIELD = "password";
 	private static final String SIGNUP_LOGIN_ID_REQ_DESCRIPTION = "로그인ID 정보";
-	private static final String SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION = "로그인ID 정보";
+	private static final String SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION = "로그인ID";
 	private static final String SIGNUP_NAME_REQ_DESCRIPTION = "이름";
-	private static final String SIGNUP_EMAIL_REQ_DESCRIPTION = "이메일";
+	private static final String SIGNUP_EMAIL_REQ_DESCRIPTION = "이메일 정보";
+	private static final String SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION = "이메일 주소";
 	private static final String SIGNUP_NICKNAME_REQ_DESCRIPTION = "닉네임";
 	private static final String SIGNUP_PASSWORD_REQ_DESCRIPTION = "비밀번호";
 
@@ -138,7 +142,8 @@ class UserControllerTest {
 								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
 						),
@@ -153,7 +158,7 @@ class UserControllerTest {
 	@DisplayName("회원가입 시 이메일 중복으로 실패한다.")
 	void signUpDuplicatedEmailFail() throws Exception {
 		// given
-		String savedEmail = "savedEmail@email.com";
+		Email savedEmail = new Email("savedEmail@email.com");
 		LoginId savedLoginId = new LoginId("savedLoginId");
 
 		User user = createUser(savedEmail, savedLoginId);
@@ -191,7 +196,8 @@ class UserControllerTest {
 								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
 						),
@@ -208,13 +214,13 @@ class UserControllerTest {
 	@DisplayName("회원가입 시 로그인 아이디 중복으로 실패한다.")
 	void signUpDuplicatedLoginIdFail() throws Exception {
 		// given
-		String savedEmail = "savedEmail@email.com";
+		Email savedEmail = new Email("savedEmail@email.com");
 		LoginId savedLoginId = new LoginId("savedLoginId");
 
 		User user = createUser(savedEmail, savedLoginId);
 		userRepository.save(user);
 
-		String newEmail = "newEmail@email.com";
+		Email newEmail = new Email("newEmail@email.com");
 		SignupRequest signupRequest = createSignupRequest(savedLoginId, newEmail);
 
 		long beforeUserCount = userRepository.count();
@@ -246,7 +252,8 @@ class UserControllerTest {
 								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
 						),
@@ -260,9 +267,9 @@ class UserControllerTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"notEmail", "notEmail@email", "notEmail.com"})
+	@MethodSource("invalidEmails")
 	@DisplayName("회원가입 시 형식에 맞지 않은 이메일인 경우 실패한다.")
-	void signUpInvalidEmailFail(String invalidEmail) throws Exception {
+	void signUpInvalidEmailFail(Email invalidEmail) throws Exception {
 
 		// given
 		LoginId validLoginId = new LoginId("loginId");
@@ -298,7 +305,8 @@ class UserControllerTest {
 								fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
 						),
@@ -310,6 +318,14 @@ class UserControllerTest {
 								fieldWithPath(INPUT_ERROR_INFOS_FIELD_FIELD).type(JsonFieldType.STRING).description(INPUT_ERROR_INFOS_FIELD_DESCRIPTION)
 						)
 				)
+		);
+	}
+
+	private static Stream<Email> invalidEmails() {
+		return Stream.of(
+				new Email("notEmail"),
+				new Email("notEmail@email"),
+				new Email("notEmail.com")
 		);
 	}
 
@@ -349,7 +365,8 @@ class UserControllerTest {
 
 		// given
 		LoginId loginId = new LoginId("dupLoginId");
-		User user = createUser("email@email.com", loginId);
+		Email email = new Email("email@email.com");
+		User user = createUser(email, loginId);
 		userRepository.save(user);
 
 		// when
@@ -418,13 +435,13 @@ class UserControllerTest {
 	void checkDuplicateEmailFail() throws Exception {
 
 		// given
-		String email = "dupEmail@email.com";
+		Email email = new Email("dupEmail@email.com");
 		LoginId loginId = new LoginId("loginId");
 		User user = createUser(email, loginId);
 		userRepository.save(user);
 
 		// when
-		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-email/{email}", email));
+		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-email/{email}", email.getAddress()));
 
 		// then
 		resultActions.andExpect(status().isConflict());
@@ -459,7 +476,8 @@ class UserControllerTest {
 	void loginSuccess() throws Exception {
 		// given
 		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser("email@email.com", loginRequest.loginId(), passwordEncoder.encrypt(loginRequest.password()));
+		Email email = new Email("email@email.com");
+		User user = createUser(email, loginRequest.loginId(), passwordEncoder.encrypt(loginRequest.password()));
 
 		userRepository.save(user);
 
@@ -536,7 +554,8 @@ class UserControllerTest {
 	void loginPasswordMismatchFail() throws Exception {
 		// given
 		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser("email@email.com", loginRequest.loginId(), passwordEncoder.encrypt("mismatchPassword"));
+		Email email = new Email("email@email.com");
+		User user = createUser(email, loginRequest.loginId(), passwordEncoder.encrypt("mismatchPassword"));
 
 		userRepository.save(user);
 

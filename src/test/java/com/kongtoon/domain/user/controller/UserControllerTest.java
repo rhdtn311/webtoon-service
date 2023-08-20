@@ -9,10 +9,7 @@ import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
-import com.kongtoon.domain.user.model.Email;
-import com.kongtoon.domain.user.model.LoginId;
-import com.kongtoon.domain.user.model.User;
-import com.kongtoon.domain.user.model.UserAuthority;
+import com.kongtoon.domain.user.model.*;
 import com.kongtoon.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,13 +61,15 @@ class UserControllerTest {
 	private static final String SIGNUP_EMAIL_ADDRESS_REQ_FIELD = "email.address";
 	private static final String SIGNUP_NICKNAME_REQ_FIELD = "nickname";
 	private static final String SIGNUP_PASSWORD_REQ_FIELD = "password";
+	private static final String SIGNUP_PASSWORD_VALUE_REQ_FIELD = "password.passwordValue";
 	private static final String SIGNUP_LOGIN_ID_REQ_DESCRIPTION = "로그인ID 정보";
 	private static final String SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION = "로그인ID";
 	private static final String SIGNUP_NAME_REQ_DESCRIPTION = "이름";
 	private static final String SIGNUP_EMAIL_REQ_DESCRIPTION = "이메일 정보";
 	private static final String SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION = "이메일 주소";
 	private static final String SIGNUP_NICKNAME_REQ_DESCRIPTION = "닉네임";
-	private static final String SIGNUP_PASSWORD_REQ_DESCRIPTION = "비밀번호";
+	private static final String SIGNUP_PASSWORD_REQ_DESCRIPTION = "비밀번호 정보";
+	private static final String SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION = "비밀번호";
 
 	private static final String CHECK_LOGIN_ID_DUP_TAG = "로그인ID 중복 체크";
 	private static final String CHECK_LOGIN_ID_DUP_SUMMARY = "로그인ID 중복 체크 성공, 실패 APIs";
@@ -145,7 +144,8 @@ class UserControllerTest {
 								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_PASSWORD_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION)
 						),
 						responseHeaders(
 								headerWithName("Location").description("저장된 회원 URL")
@@ -199,7 +199,8 @@ class UserControllerTest {
 								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_PASSWORD_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION)
 						),
 						responseFields(
 								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
@@ -255,7 +256,8 @@ class UserControllerTest {
 								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_PASSWORD_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION)
 						),
 						responseFields(
 								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
@@ -308,7 +310,8 @@ class UserControllerTest {
 								fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
 								fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
-								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_REQ_DESCRIPTION)
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_PASSWORD_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION)
 						),
 						responseFields(
 								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
@@ -477,7 +480,8 @@ class UserControllerTest {
 		// given
 		LoginRequest loginRequest = createLoginRequest();
 		Email email = new Email("email@email.com");
-		User user = createUser(email, loginRequest.loginId(), passwordEncoder.encrypt(loginRequest.password()));
+		Password password = new Password(passwordEncoder.encrypt(loginRequest.password().getPasswordValue()));
+		User user = createUser(email, loginRequest.loginId(), password);
 
 		userRepository.save(user);
 
@@ -502,7 +506,8 @@ class UserControllerTest {
 						requestFields(
 								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
 								fieldWithPath(LOGIN_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
-								fieldWithPath(LOGIN_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_PASSWORD_REQ_DESCRIPTION)
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_PASSWORD_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION)
 						)
 				)
 		);
@@ -538,7 +543,8 @@ class UserControllerTest {
 						requestFields(
 								fieldWithPath(LOGIN_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(LOGIN_LOGIN_ID_REQ_DESCRIPTION),
 								fieldWithPath(LOGIN_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
-								fieldWithPath(LOGIN_PASSWORD_REQ_FIELD).type(JsonFieldType.STRING).description(LOGIN_PASSWORD_REQ_DESCRIPTION)
+								fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_PASSWORD_REQ_DESCRIPTION),
+								fieldWithPath(SIGNUP_PASSWORD_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION)
 						),
 						responseFields(
 								fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
@@ -555,7 +561,8 @@ class UserControllerTest {
 		// given
 		LoginRequest loginRequest = createLoginRequest();
 		Email email = new Email("email@email.com");
-		User user = createUser(email, loginRequest.loginId(), passwordEncoder.encrypt("mismatchPassword"));
+		Password mismatchPassword = new Password(passwordEncoder.encrypt("mismatchPassword"));
+		User user = createUser(email, loginRequest.loginId(), mismatchPassword);
 
 		userRepository.save(user);
 

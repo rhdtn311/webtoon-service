@@ -8,6 +8,7 @@ import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
 import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
+import com.kongtoon.domain.user.model.Password;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -45,15 +46,13 @@ class UserServiceTest {
 		String name = "name";
 		Email email = new Email("email@email.com");
 		String nickname = "nickname";
-		String password = "password";
+		Password password = new Password("password");
 		String encryptedPassword = "encryptedPassword";
 
 		SignupRequest signupRequest = new SignupRequest(
 				loginId, name, email, nickname, password
 		);
 
-		when(passwordEncoder.encrypt(password))
-				.thenReturn(encryptedPassword);
 		when(userRepository.existsByLoginId(loginId))
 				.thenReturn(false);
 		when(userRepository.existsByEmail(email))
@@ -76,7 +75,7 @@ class UserServiceTest {
 		String name = "name";
 		Email email = new Email("email@email.com");
 		String nickname = "nickname";
-		String password = "password";
+		Password password = new Password("password");
 
 		SignupRequest signupRequest = new SignupRequest(
 				loginId, name, email, nickname, password
@@ -101,7 +100,7 @@ class UserServiceTest {
 		String name = "name";
 		Email email = new Email("email@email.com");
 		String nickname = "nickname";
-		String password = "password";
+		Password password = new Password("password");
 
 		SignupRequest signupRequest = new SignupRequest(
 				loginId, name, email, nickname, password
@@ -132,7 +131,7 @@ class UserServiceTest {
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
 				.thenReturn(Optional.of(user));
-		when(passwordEncoder.isMatch(loginRequest.password(), user.getPassword()))
+		when(passwordEncoder.isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue()))
 				.thenReturn(true);
 
 		// when
@@ -140,7 +139,7 @@ class UserServiceTest {
 
 		// then
 		verify(userRepository).findByLoginId(loginRequest.loginId());
-		verify(passwordEncoder).isMatch(loginRequest.password(), user.getPassword());
+		verify(passwordEncoder).isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue());
 
 		assertThat(result).usingRecursiveComparison()
 				.ignoringFields("userId")
@@ -170,11 +169,12 @@ class UserServiceTest {
 		// given
 		Email email = new Email("email@email.com");
 		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser(email, loginRequest.loginId(), "mismatchPassword");
+		Password mismatchPassword = new Password("mismatchPassword");
+		User user = createUser(email, loginRequest.loginId(), mismatchPassword);
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
 				.thenReturn(Optional.of(user));
-		when(passwordEncoder.isMatch(loginRequest.password(), user.getPassword()))
+		when(passwordEncoder.isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue()))
 				.thenReturn(false);
 
 		// when, hen
@@ -183,6 +183,6 @@ class UserServiceTest {
 				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.LOGIN_FAIL);
 
 		verify(userRepository).findByLoginId(loginRequest.loginId());
-		verify(passwordEncoder).isMatch(loginRequest.password(), user.getPassword());
+		verify(passwordEncoder).isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue());
 	}
 }

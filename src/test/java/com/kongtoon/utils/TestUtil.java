@@ -5,10 +5,7 @@ import com.kongtoon.domain.comic.model.*;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
-import com.kongtoon.domain.user.model.Email;
-import com.kongtoon.domain.user.model.LoginId;
-import com.kongtoon.domain.user.model.User;
-import com.kongtoon.domain.user.model.UserAuthority;
+import com.kongtoon.domain.user.model.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +22,7 @@ public class TestUtil {
 				"Name",
 				new Email("email@email.com"),
 				"nickname",
-				"password123!"
+				new Password("password123!")
 		);
 	}
 
@@ -35,7 +32,7 @@ public class TestUtil {
 				"Name",
 				email,
 				"nickname",
-				"password123!"
+				new Password("password123!")
 		);
 	}
 
@@ -45,13 +42,13 @@ public class TestUtil {
 				"Name",
 				email,
 				"nickname",
-				"password123!",
+				new Password("password123!"),
 				UserAuthority.USER,
 				true
 		);
 	}
 
-	public static User createUser(Email email, LoginId loginId, String password) {
+	public static User createUser(Email email, LoginId loginId, Password password) {
 		return new User(
 				loginId,
 				"Name",
@@ -69,7 +66,7 @@ public class TestUtil {
 				"Name",
 				new Email("email@email.com"),
 				"nickname",
-				"password",
+				new Password("password123!"),
 				userAuthority,
 				true
 		);
@@ -77,7 +74,7 @@ public class TestUtil {
 
 	public static LoginRequest createLoginRequest() {
 		return new LoginRequest(
-				new LoginId("loginId"), "password"
+				new LoginId("loginId"), new Password("password123!")
 		);
 	}
 

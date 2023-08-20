@@ -6,6 +6,7 @@ import com.kongtoon.common.security.PasswordEncoder;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
+import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
@@ -54,7 +55,7 @@ public class UserService {
 		}
 	}
 
-	public void validateDuplicateEmail(String email) {
+	public void validateDuplicateEmail(Email email) {
 		if (userRepository.existsByEmail(email)) {
 			throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
 		}

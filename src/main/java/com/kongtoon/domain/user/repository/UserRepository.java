@@ -1,5 +1,6 @@
 package com.kongtoon.domain.user.repository;
 
+import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,5 +13,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	boolean existsByLoginId(LoginId loginId);
 
-	boolean existsByEmail(String email);
+	boolean existsByEmail(Email email);
 }

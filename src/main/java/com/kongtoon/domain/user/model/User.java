@@ -27,8 +27,8 @@ public class User extends BaseEntity {
 	@Column(name = "name", length = 20, nullable = false)
 	private String name;
 
-	@Column(name = "email", unique = true, length = 320, nullable = false)
-	private String email;
+	@Embedded
+	private Email email;
 
 	@Column(name = "nickname", length = 15, nullable = false)
 	private String nickname;
@@ -46,7 +46,7 @@ public class User extends BaseEntity {
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
 
-	public User(LoginId loginId, String name, String email, String nickname, String password, UserAuthority authority,
+	public User(LoginId loginId, String name, Email email, String nickname, String password, UserAuthority authority,
 			boolean setAlarm) {
 		this.loginId = loginId;
 		this.name = name;

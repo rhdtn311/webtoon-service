@@ -1,7 +1,7 @@
 package com.kongtoon.domain.user.dto.request;
 
 import com.kongtoon.common.constant.RegexConst;
-import com.kongtoon.common.validation.Email;
+import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
@@ -18,9 +18,8 @@ public record SignupRequest(
 		@NotBlank
 		String name,
 
-		@Email
-		@NotBlank
-		String email,
+		@Valid
+		Email email,
 
 		@NotBlank
 		String nickname,

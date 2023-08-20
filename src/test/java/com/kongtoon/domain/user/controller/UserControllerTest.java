@@ -286,7 +286,7 @@ class UserControllerTest {
 		resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.INVALID_INPUT.getMessage()));
 		resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.INVALID_INPUT.name()));
 		resultActions.andExpect(jsonPath(INPUT_ERROR_INFOS_MESSAGE_FIELD).value("잘못된 형식의 이메일입니다."));
-		resultActions.andExpect(jsonPath(INPUT_ERROR_INFOS_FIELD_FIELD).value(SIGNUP_EMAIL_REQ_FIELD));
+		resultActions.andExpect(jsonPath(INPUT_ERROR_INFOS_FIELD_FIELD).value(SIGNUP_EMAIL_ADDRESS_REQ_FIELD));
 
 		long afterUserCount = userRepository.count();
 		assertThat(beforeUserCount).isSameAs(afterUserCount);

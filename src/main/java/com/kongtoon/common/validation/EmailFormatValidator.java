@@ -1,16 +1,14 @@
 package com.kongtoon.common.validation;
 
-import java.util.regex.Pattern;
+import com.kongtoon.common.constant.RegexConst;
+import org.springframework.stereotype.Component;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-
-import org.springframework.stereotype.Component;
-
-import com.kongtoon.common.constant.RegexConst;
+import java.util.regex.Pattern;
 
 @Component
-public class EmailFormatValidator implements ConstraintValidator<Email, String> {
+public class EmailFormatValidator implements ConstraintValidator<EmailValid, String> {
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {

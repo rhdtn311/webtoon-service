@@ -8,6 +8,7 @@ import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
 import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
+import com.kongtoon.domain.user.model.Password;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,8 @@ public class UserService {
 		return UserAuthDTO.from(user);
 	}
 
-	private void validatePasswordIsCorrect(String inputPassword, String originPassword) {
-		if (!passwordEncoder.isMatch(inputPassword, originPassword)) {
+	private void validatePasswordIsCorrect(Password inputPassword, Password originPassword) {
+		if (!passwordEncoder.isMatch(inputPassword.getPasswordValue(), originPassword.getPasswordValue())) {
 			throw new BusinessException(ErrorCode.LOGIN_FAIL);
 		}
 	}
@@ -41,8 +42,8 @@ public class UserService {
 		validateDuplicateEmail(signupRequest.email());
 		validateDuplicateLoginId(signupRequest.loginId());
 
-		String encryptPassword = passwordEncoder.encrypt(signupRequest.password());
-		User user = signupRequest.toEntity(encryptPassword);
+		signupRequest.password().encryptPassword(passwordEncoder);
+		User user = signupRequest.toEntity();
 
 		userRepository.save(user);
 

@@ -33,8 +33,8 @@ public class User extends BaseEntity {
 	@Column(name = "nickname", length = 15, nullable = false)
 	private String nickname;
 
-	@Column(name = "password", length = 255, nullable = false)
-	private String password;
+	@Embedded
+	private Password password;
 
 	@Enumerated(value = EnumType.STRING)
 	@Column(name = "authority", length = 20, nullable = false)
@@ -46,7 +46,7 @@ public class User extends BaseEntity {
 	@Column(name = "deleted_at", nullable = true)
 	private LocalDateTime deletedAt;
 
-	public User(LoginId loginId, String name, Email email, String nickname, String password, UserAuthority authority,
+	public User(LoginId loginId, String name, Email email, String nickname, Password password, UserAuthority authority,
 			boolean setAlarm) {
 		this.loginId = loginId;
 		this.name = name;

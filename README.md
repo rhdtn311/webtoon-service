@@ -454,6 +454,7 @@ public class GlobalExceptionHandler {
 1. 입력값 검증 예외 발생 시
 
 ![image](https://github.com/rhdtn311/webtoon-service/assets/68289543/b83ef787-7de8-4c5c-80f3-b9f73a6c864b)
+
 2. 비즈니스 예외 발생 시
 
 ![image](https://github.com/rhdtn311/webtoon-service/assets/68289543/26866324-6d19-4ead-988f-e1a30811e7d9)
@@ -488,36 +489,39 @@ Swagger와 Spring Rest Docs의 장점만 적용하여 Spring Rest Docs 기반의
 @DisplayName("회원가입 시 이메일 중복으로 실패한다.")
 void signUpDuplicatedEmailFail()throws Exception{
 
-        // 테스트 코드 생략
+	@Test
+	@DisplayName("회원가입 시 이메일 중복으로 실패한다.")
+	void signUpDuplicatedEmailFail() throws Exception {
+        // ... 생략
 
         // docs
         resultActions.andDo(
-        document("이메일 중복으로 회원가입 실패",
-        ResourceSnippetParameters.builder()
-        .tag(SIGNUP_TAG)
-        .requestSchema(Schema.schema(SIGNUP_REQ_SCHEMA))
-        .responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
-        ,
-        preprocessRequest(prettyPrint()),
-        preprocessResponse(prettyPrint()),
-        requestFields(
-        fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
-        fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
-        fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
-        fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
-        fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
-        fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
-        fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_PASSWORD_REQ_DESCRIPTION),
-        fieldWithPath(SIGNUP_PASSWORD_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION)
-        ),
-        responseFields(
-        fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
-        fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
-        fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
-        )
-        )
+                document("이메일 중복으로 회원가입 실패",
+                        ResourceSnippetParameters.builder()
+                                .tag(SIGNUP_TAG)
+                                .requestSchema(Schema.schema(SIGNUP_REQ_SCHEMA))
+                                .responseSchema(Schema.schema(COMMON_EX_OBJ_SCHEMA))
+                        ,
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath(SIGNUP_LOGIN_ID_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_LOGIN_ID_REQ_DESCRIPTION),
+                                fieldWithPath(SIGNUP_LOGIN_ID_ID_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION),
+                                fieldWithPath(SIGNUP_NAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NAME_REQ_DESCRIPTION),
+                                fieldWithPath(SIGNUP_EMAIL_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_EMAIL_REQ_DESCRIPTION),
+                                fieldWithPath(SIGNUP_EMAIL_ADDRESS_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_EMAIL_ADDRESS_REQ_DESCRIPTION),
+                                fieldWithPath(SIGNUP_NICKNAME_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_NICKNAME_REQ_DESCRIPTION),
+                                fieldWithPath(SIGNUP_PASSWORD_REQ_FIELD).type(JsonFieldType.OBJECT).description(SIGNUP_PASSWORD_REQ_DESCRIPTION),
+                                fieldWithPath(SIGNUP_PASSWORD_VALUE_REQ_FIELD).type(JsonFieldType.STRING).description(SIGNUP_PASSWORD_VALUE_REQ_DESCRIPTION)
+                        ),
+                        responseFields(
+                                fieldWithPath(ERROR_MESSAGE_FIELD).type(JsonFieldType.STRING).description(ERROR_MESSAGE_DESCRIPTION),
+                                fieldWithPath(ERROR_CODE_FIELD).type(JsonFieldType.STRING).description(ERROR_CODE_DESCRIPTION),
+                                fieldWithPath(INPUT_ERROR_INFOS_FIELD).type(JsonFieldType.NULL).description(INPUT_ERROR_INFOS_DESCRIPTION)
+                        )
+                )
         );
-        }
+    }
 ```
 API 문서화를 위한 테스트 코드를 작성합니다.
 ![](https://blog.kakaocdn.net/dn/b3pTZs/btso12ewOYU/8EdbHVRZ3dAiGojgoX5IA0/img.png)
@@ -668,16 +672,10 @@ public class UserAuthJwtArgumentResolver implements HandlerMethodArgumentResolve
 // 1. 회원가입 API
 @PostMapping("/signup")
 public ResponseEntity<Void> signup(
-// SignupRequest 내부에서 loginId에 대한 검증이 이루어짐
-@RequestBody @Valid SignupRequest signupRequest,
-        HttpServletRequest httpServletRequest
-        ){
-        Long savedUserId=userService.signup(signupRequest);
-
-        return ResponseEntity
-        .created(URI.create(httpServletRequest.getRequestURI()+"/"+savedUserId))
-        .build();
-        }
+	// SignupRequest 내부에서 loginId에 대한 검증이 이루어짐
+	@RequestBody @Valid SignupRequest signupRequest,
+	HttpServletRequest httpServletRequest
+) { ... }
 
 public record SignupRequest(
         @NotBlank
@@ -687,38 +685,27 @@ public record SignupRequest(
 ) {
 }
 
-    // 2. 회원가입 시 로그인 ID의 중복을 검증하는 API
-    @PostMapping("/signup/check-duplicate-id/{loginId}")
-    public ResponseEntity<Void> checkDuplicateId(
-            // 마찬가지로 같은 조건의 검증이 이루어짐
-            @PathVariable @NotBlank @Length(min = 5, max = 20) String loginId
-    ) {
-        userService.validateDuplicateLoginId(loginId);
+// 2. 회원가입 시 로그인 ID의 중복을 검증하는 API
+@PostMapping("/signup/check-duplicate-id/{loginId}")
+public ResponseEntity<Void> checkDuplicateId(
+	// 마찬가지로 같은 조건의 검증이 이루어짐
+	@PathVariable @NotBlank @Length(min = 5, max = 20) String loginId
+) { ... }
 
-        return ResponseEntity.noContent().build();
-    }
-
-    // 3. 로그인 API
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(
-            @RequestBody @Valid LoginRequest loginRequest,
-            HttpServletRequest httpServletRequest
-    ) {
-        UserAuthDTO userAuth = userService.login(loginRequest);
-
-        HttpSession session = httpServletRequest.getSession();
-        UserSessionUtil.setLoginUserAuth(session, userAuth);
-
-        return ResponseEntity.noContent().build();
-    }
+// 3. 로그인 API
+@PostMapping("/login")
+public ResponseEntity<Void> login(
+	// 마찬가지로 같은 조건의 검증이 이루어짐
+	@RequestBody @Valid LoginRequest loginRequest,
+	HttpServletRequest httpServletRequest
+) { ... }
 
 public record LoginRequest(
-        @NotBlank
-        @Length(min = 5, max = 20)
-        String loginId,
+	@NotBlank
+	@Length(min = 5, max = 20)
+	String loginId,
         // ...
-) {
-}
+) { ... }
 ```
 
 위 코드에서 보이듯이, 회원가입 API, 로그인 API에서 각각 같은 검증 코드가 중복적으로 작성됩니다.
@@ -774,25 +761,25 @@ public class LoginId {
 public ResponseEntity<Void> login(
 @RequestBody @Valid LoginRequest loginRequest,
         HttpServletRequest httpServletRequest
-        ){...}
+) {...}
 
 // 2. 회원가입 시 로그인 ID의 중복을 검증하는 API
 @PostMapping("/signup")
 public ResponseEntity<Void> signup(
 @RequestBody @Valid SignupRequest signupRequest,
         HttpServletRequest httpServletRequest
-        ){...}
+) {...}
 
 public record SignupRequest(
         @Valid
         LoginId loginId
-)
+) {...}
 
-        // 3. 로그인 API
-        @PostMapping("/signup/check-duplicate-id/{loginId}")
-        public ResponseEntity<Void> checkDuplicateId(
-                @PathVariable @Valid LoginId loginId
-        ) { ...}
+// 3. 로그인 API
+@PostMapping("/signup/check-duplicate-id/{loginId}")
+public ResponseEntity<Void> checkDuplicateId(
+	@PathVariable @Valid LoginId loginId
+) { ... }
 ```
 
 이전과 달리 이제 `LoginId`를 요청으로 받는 API 마다 검증 어노테이션을 적용해 주는게 아니라 `LoginId` 내부에 검증 로직이 작성되어 있으니
@@ -851,10 +838,10 @@ public class EmailFormatValidator implements ConstraintValidator<EmailValid, Ema
 
 ```java
 public static boolean matches(String regex,CharSequence input){
-        Pattern p=Pattern.compile(regex);
-        Matcher m=p.matcher(input);
-        return m.matches();
-        }
+	Pattern p=Pattern.compile(regex);
+	Matcher m=p.matcher(input);
+	return m.matches();
+}
 ```
 
 즉, 이메일을 검증할 때마다 새로운 `Pattern` 객체를 생성하고 한 번 사용한 뒤 GC의 대상이 됩니다.

@@ -40,8 +40,7 @@ public class AuthorService {
 
 	@Transactional
 	public Long createAuthor(AuthorCreateRequest authorCreateRequest, LoginId loginId) {
-		User user = userRepository.findByLoginId(loginId)
-				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		User user = getUser(loginId);
 
 		validateUserIsAuthor(user);
 
@@ -53,6 +52,11 @@ public class AuthorService {
 		return author.getId();
 	}
 
+	private User getUser(LoginId loginId) {
+		return userRepository.findByLoginId(loginId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
+
 	private void validateUserIsAuthor(User user) {
 		if (user.isAuthor()) {
 			throw new BusinessException(ErrorCode.DUPLICATE_APPLY_AUTHOR_AUTHORITY);
@@ -60,9 +64,8 @@ public class AuthorService {
 	}
 
 	@Transactional(readOnly = true)
-	public AuthorResponse getAuthor(Long authorId) {
-		Author author = authorRepository.findById(authorId)
-				.orElseThrow(() -> new BusinessException(ErrorCode.AUTHOR_NOT_FOUND));
+	public AuthorResponse getAuthorResponse(Long authorId) {
+		Author author = getAuthor(authorId);
 
 		List<Comic> comics = comicRepository.findByAuthor(author);
 
@@ -72,35 +75,52 @@ public class AuthorService {
 		return AuthorResponse.from(author, comics, smallThumbnailUrlsOfComic, lastEpisodeNumbersOfComic);
 	}
 
-	private Map<Long, String> getSmallThumbnailUrlsOfComic(List<Comic> comics) {
+	private Author getAuthor(Long authorId) {
+		return authorRepository.findById(authorId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.AUTHOR_NOT_FOUND));
+	}
 
-		Map<Long, String> smallThumbnailUrls = new HashMap<>();
-		comics.forEach(comic ->
-				smallThumbnailUrls.put(comic.getId(), NOT_EXIST_SMALL_THUMBNAIL)
-		);
+	private Map<Long, String> getSmallThumbnailUrlsOfComic(List<Comic> comics) {
+		Map<Long, String> comicIdsWithSmallThumbnailUrls = new HashMap<>();
+		setComicIdsWithDefaultThumbnailUrlsToMap(comics, comicIdsWithSmallThumbnailUrls);
 
 		List<Thumbnail> thumbnails = thumbnailRepository.findByComicInAndThumbnailType(comics, ThumbnailType.SMALL);
+		setThumbnailImageUrlsToMap(thumbnails, comicIdsWithSmallThumbnailUrls);
 
-		thumbnails.forEach(thumbnail ->
-				smallThumbnailUrls.put(thumbnail.getComic().getId(), thumbnail.getImageUrl())
+		return comicIdsWithSmallThumbnailUrls;
+	}
+
+	private void setComicIdsWithDefaultThumbnailUrlsToMap(List<Comic> comics, Map<Long, String> comicIdsWithSmallThumbnailUrls) {
+		comics.forEach(comic ->
+				comicIdsWithSmallThumbnailUrls.put(comic.getId(), NOT_EXIST_SMALL_THUMBNAIL)
 		);
+	}
 
-		return smallThumbnailUrls;
+	private void setThumbnailImageUrlsToMap(List<Thumbnail> thumbnails, Map<Long, String> comicIdsWithSmallThumbnailUrls) {
+		thumbnails.forEach(thumbnail ->
+				comicIdsWithSmallThumbnailUrls.put(thumbnail.getComic().getId(), thumbnail.getImageUrl())
+		);
 	}
 
 	private Map<Long, Integer> getLastEpisodeNumbersOfComic(List<Comic> comics) {
-
-		Map<Long, Integer> lastEpisodeNumbersOfComic = new HashMap<>();
-		comics.forEach(comic ->
-				lastEpisodeNumbersOfComic.put(comic.getId(), NOT_EXIST_EPISODE_NUMBER)
-		);
+		Map<Long, Integer> comicIdsWithLastEpisodeNumbers = new HashMap<>();
+		setComicIdsWithDefaultEpisodeNumberToMap(comics, comicIdsWithLastEpisodeNumbers);
 
 		List<Episode> episodes = episodeRepository.findRecentlyEpisodesByComics(comics);
+		setEpisodeNumbersToMap(episodes, comicIdsWithLastEpisodeNumbers);
 
-		episodes.forEach(episode ->
-				lastEpisodeNumbersOfComic.put(episode.getComic().getId(), episode.getEpisodeNumber())
+		return comicIdsWithLastEpisodeNumbers;
+	}
+
+	private void setComicIdsWithDefaultEpisodeNumberToMap(List<Comic> comics, Map<Long, Integer> comicIdsWithLastEpisodeNumbers) {
+		comics.forEach(comic ->
+				comicIdsWithLastEpisodeNumbers.put(comic.getId(), NOT_EXIST_EPISODE_NUMBER)
 		);
+	}
 
-		return lastEpisodeNumbersOfComic;
+	private void setEpisodeNumbersToMap(List<Episode> episodes, Map<Long, Integer> comicIdsWithLastEpisodeNumbers) {
+		episodes.forEach(episode ->
+				comicIdsWithLastEpisodeNumbers.put(episode.getComic().getId(), episode.getEpisodeNumber())
+		);
 	}
 }

@@ -56,7 +56,7 @@ public class EpisodeModifyService {
 	private Episode createEpisode(EpisodeRequest episodeRequest, Comic comic) {
 		String thumbnailImageUrl = fileStorage.upload(episodeRequest.getThumbnailImage(), ImageFileType.EPISODE_THUMBNAIL);
 
-		deleteFileAfterRollbackEvent(thumbnailImageUrl, ImageFileType.EPISODE_THUMBNAIL);
+		callDeleteFileAfterRollbackEvent(thumbnailImageUrl, ImageFileType.EPISODE_THUMBNAIL);
 
 		Integer nextEpisodeNumber = getNextEpisodeNumber(comic);
 
@@ -67,15 +67,14 @@ public class EpisodeModifyService {
 
 	private void createEpisodeImages(EpisodeRequest episodeRequest, Episode episode) {
 		List<EpisodeContentRequest> episodeContentRequests = episodeRequest.getEpisodeContentRequests();
-		for (EpisodeContentRequest episodeContentRequest : episodeContentRequests) {
-			String episodeContentImageUrl = fileStorage.upload(episodeContentRequest.getContentImage(),
-					ImageFileType.EPISODE);
 
-			deleteFileAfterRollbackEvent(episodeContentImageUrl, ImageFileType.EPISODE);
-
-			EpisodeImage episodeImage = episodeContentRequest.toEpisodeImage(episodeContentImageUrl, episode);
-			episodeImageRepository.save(episodeImage);
-		}
+		episodeContentRequests.forEach(episodeContentRequest -> {
+					String episodeContentImageUrl = fileStorage.upload(episodeContentRequest.getContentImage(), ImageFileType.EPISODE);
+					callDeleteFileAfterRollbackEvent(episodeContentImageUrl, ImageFileType.EPISODE);
+					EpisodeImage episodeImage = episodeContentRequest.toEpisodeImage(episodeContentImageUrl, episode);
+					episodeImageRepository.save(episodeImage);
+				}
+		);
 	}
 
 	@Transactional
@@ -100,25 +99,31 @@ public class EpisodeModifyService {
 	}
 
 	private void updateEpisodeThumbnail(EpisodeRequest episodeRequest, Episode episode) {
-		deleteFileAfterCommitEvent(episode.getThumbnailUrl(), ImageFileType.EPISODE_THUMBNAIL);
+		callDeleteFileAfterCommitEvent(episode.getThumbnailUrl(), ImageFileType.EPISODE_THUMBNAIL);
 
 		String thumbnailImageUrl = fileStorage.upload(episodeRequest.getThumbnailImage(), ImageFileType.EPISODE_THUMBNAIL);
 
-		deleteFileAfterRollbackEvent(thumbnailImageUrl, ImageFileType.EPISODE_THUMBNAIL);
+		callDeleteFileAfterRollbackEvent(thumbnailImageUrl, ImageFileType.EPISODE_THUMBNAIL);
 
 		episode.updateEpisode(episodeRequest.getTitle(), thumbnailImageUrl);
 	}
 
-	private void deleteEpisodeContentImages(List<EpisodeImage> savedEpisodeImages,
-			List<EpisodeContentRequest> episodeContentRequests) {
+	private void deleteEpisodeContentImages(
+			List<EpisodeImage> savedEpisodeImages,
+			List<EpisodeContentRequest> episodeContentRequests
+	) {
 		List<EpisodeImage> removeEpisodeContentImages = getRemoveEpisodeContentImages(
 				episodeContentRequests,
 				savedEpisodeImages
 		);
 
 		episodeImageRepository.deleteAll(removeEpisodeContentImages);
+		callDeleteEpisodeImagesToFileStorageEvent(removeEpisodeContentImages);
+	}
+
+	private void callDeleteEpisodeImagesToFileStorageEvent(List<EpisodeImage> removeEpisodeContentImages) {
 		removeEpisodeContentImages.forEach(
-				episodeImage -> deleteFileAfterCommitEvent(episodeImage.getContentImageUrl(), ImageFileType.EPISODE)
+				episodeImage -> callDeleteFileAfterCommitEvent(episodeImage.getContentImageUrl(), ImageFileType.EPISODE)
 		);
 	}
 
@@ -138,7 +143,7 @@ public class EpisodeModifyService {
 					EpisodeImage episodeImage = episodeContentRequest.toEpisodeImage(episodeImageUrl, episode);
 					episodeImageRepository.save(episodeImage);
 
-					deleteFileAfterRollbackEvent(episodeImageUrl, ImageFileType.EPISODE);
+					callDeleteFileAfterRollbackEvent(episodeImageUrl, ImageFileType.EPISODE);
 				}
 		);
 	}
@@ -147,23 +152,25 @@ public class EpisodeModifyService {
 			List<EpisodeImage> savedEpisodeImages,
 			List<EpisodeContentRequest> episodeContentRequests
 	) {
-		for (EpisodeImage savedEpisodeImage : savedEpisodeImages) {
-			episodeContentRequests.stream()
-					.filter(
-							episodeContentRequest -> savedEpisodeImage.isSameContentOrder(episodeContentRequest.getContentOrder())
-					)
-					.findFirst()
-					.ifPresent(episodeContentRequest -> {
-								String episodeImageUrl = fileStorage.upload(episodeContentRequest.getContentImage(), ImageFileType.EPISODE);
+		savedEpisodeImages.forEach(episodeImage ->
+				findSameOrderEpisodeImageAndUpdate(episodeContentRequests, episodeImage)
+		);
+	}
 
-								deleteFileAfterCommitEvent(savedEpisodeImage.getContentImageUrl(), ImageFileType.EPISODE);
+	private void findSameOrderEpisodeImageAndUpdate(List<EpisodeContentRequest> episodeContentRequests, EpisodeImage episodeImage) {
+		episodeContentRequests.stream()
+				.filter(
+						episodeContentRequest -> episodeImage.isSameContentOrder(episodeContentRequest.getContentOrder())
+				)
+				.findFirst()
+				.ifPresent(episodeContentRequest -> {
+							String episodeImageUrl = fileStorage.upload(episodeContentRequest.getContentImage(), ImageFileType.EPISODE);
+							episodeImage.updateEpisodeImage(episodeImageUrl);
 
-								savedEpisodeImage.updateEpisodeImage(episodeImageUrl);
-
-								deleteFileAfterRollbackEvent(episodeImageUrl, ImageFileType.EPISODE);
-							}
-					);
-		}
+							callDeleteFileAfterCommitEvent(episodeImage.getContentImageUrl(), ImageFileType.EPISODE);
+							callDeleteFileAfterRollbackEvent(episodeImageUrl, ImageFileType.EPISODE);
+						}
+				);
 	}
 
 	private List<EpisodeContentRequest> getNewEpisodeContentImages(
@@ -192,13 +199,13 @@ public class EpisodeModifyService {
 				.toList();
 	}
 
-	private void deleteFileAfterCommitEvent(String fileUrl, FileType fileType) {
+	private void callDeleteFileAfterCommitEvent(String fileUrl, FileType fileType) {
 		applicationEventPublisher.publishEvent(
 				new FileDeleteAfterCommitEvent(fileUrl, fileType)
 		);
 	}
 
-	private void deleteFileAfterRollbackEvent(String fileUrl, FileType fileType) {
+	private void callDeleteFileAfterRollbackEvent(String fileUrl, FileType fileType) {
 		applicationEventPublisher.publishEvent(
 				new FileDeleteAfterCommitEvent(fileUrl, fileType)
 		);

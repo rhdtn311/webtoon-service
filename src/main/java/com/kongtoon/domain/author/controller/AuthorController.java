@@ -39,7 +39,7 @@ public class AuthorController {
 	@LoginCheck(authority = UserAuthority.USER)
 	@GetMapping("/{authorId}")
 	public ResponseEntity<AuthorResponse> getAuthor(@PathVariable @Positive Long authorId) {
-		AuthorResponse authorResponse = authorService.getAuthor(authorId);
+		AuthorResponse authorResponse = authorService.getAuthorResponse(authorId);
 
 		return ResponseEntity.ok(authorResponse);
 	}

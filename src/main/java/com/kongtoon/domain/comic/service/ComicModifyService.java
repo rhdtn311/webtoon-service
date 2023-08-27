@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -45,18 +46,13 @@ public class ComicModifyService {
 		Comic comic = comicRequest.toComic(author);
 		comicRepository.save(comic);
 
-		comicRequest.getThumbnailRequests()
-				.forEach(thumbnailRequest -> {
-					String thumbnailImageUrl = fileStorage.upload(
-							thumbnailRequest.getThumbnailImage(),
-							ImageFileType.COMIC_THUMBNAIL
-					);
-					Thumbnail thumbnail = thumbnailRequest.toThumbnail(thumbnailImageUrl, comic);
-					thumbnailRepository.save(thumbnail);
+		comicRequest.getThumbnailRequests().forEach(thumbnailRequest -> {
+			String thumbnailImageUrl = uploadThumbnailToFileStorage(thumbnailRequest);
+			Thumbnail thumbnail = thumbnailRequest.toThumbnail(thumbnailImageUrl, comic);
+			thumbnailRepository.save(thumbnail);
 
-					applicationEventPublisher.publishEvent(
-							new FileDeleteAfterRollbackEvent(thumbnailImageUrl, ImageFileType.COMIC_THUMBNAIL));
-				});
+			callThumbnailImageDeleteAfterRollbackEvent(thumbnailImageUrl);
+		});
 
 		return comic.getId();
 	}
@@ -79,27 +75,60 @@ public class ComicModifyService {
 		List<Thumbnail> thumbnails = thumbnailRepository.findByComic(comic);
 		List<ThumbnailRequest> thumbnailRequests = comicRequest.getThumbnailRequests();
 
-		for (ThumbnailRequest thumbnailRequest : thumbnailRequests) {
+		updateThumbnailUrls(thumbnailRequests, thumbnails, comic);
+	}
 
-			String thumbnailImageUrl = fileStorage.upload(thumbnailRequest.getThumbnailImage(),
-					ImageFileType.COMIC_THUMBNAIL);
-			applicationEventPublisher.publishEvent(
-					new FileDeleteAfterRollbackEvent(thumbnailImageUrl, ImageFileType.COMIC_THUMBNAIL));
+	private void updateThumbnailUrls(List<ThumbnailRequest> thumbnailRequests, List<Thumbnail> thumbnails, Comic comic) {
+		thumbnailRequests.forEach(thumbnailRequest -> {
+					String thumbnailImageUrl = uploadThumbnailToFileStorage(thumbnailRequest);
+					callThumbnailImageDeleteAfterRollbackEvent(thumbnailImageUrl);
 
-			thumbnails.stream()
-					.filter(thumbnail -> thumbnail.getThumbnailType().isSameType(thumbnailRequest.getThumbnailType()))
-					.findFirst()
-					.ifPresentOrElse(
-							thumbnail -> {
-								applicationEventPublisher.publishEvent(
-										new FileDeleteAfterCommitEvent(thumbnail.getImageUrl(), ImageFileType.COMIC_THUMBNAIL));
-								thumbnail.update(thumbnail.getThumbnailType(), thumbnailImageUrl);
-							},
-							() -> {
-								Thumbnail thumbnail = thumbnailRequest.toThumbnail(thumbnailImageUrl, comic);
-								thumbnailRepository.save(thumbnail);
-							});
-		}
+					updateOrSaveThumbnail(thumbnails, comic, thumbnailRequest, thumbnailImageUrl);
+				}
+		);
+	}
+
+	private void updateOrSaveThumbnail(List<Thumbnail> thumbnails, Comic comic, ThumbnailRequest thumbnailRequest, String thumbnailImageUrl) {
+		thumbnails.stream()
+				.filter(thumbnail -> thumbnail.getThumbnailType().isSameType(thumbnailRequest.getThumbnailType()))
+				.findFirst()
+				.ifPresentOrElse(
+						updateThumbnail(thumbnailImageUrl),
+						saveThumbnail(comic, thumbnailRequest, thumbnailImageUrl)
+				);
+	}
+
+	private Consumer<Thumbnail> updateThumbnail(String thumbnailImageUrl) {
+		return thumbnail -> {
+			callThumbnailImageDeleteAfterCommitEvent(thumbnail);
+			thumbnail.update(thumbnail.getThumbnailType(), thumbnailImageUrl);
+		};
+	}
+
+	private Runnable saveThumbnail(Comic comic, ThumbnailRequest thumbnailRequest, String thumbnailImageUrl) {
+		return () -> {
+			Thumbnail thumbnail = thumbnailRequest.toThumbnail(thumbnailImageUrl, comic);
+			thumbnailRepository.save(thumbnail);
+		};
+	}
+
+	private String uploadThumbnailToFileStorage(ThumbnailRequest thumbnailRequest) {
+		return fileStorage.upload(
+				thumbnailRequest.getThumbnailImage(),
+				ImageFileType.COMIC_THUMBNAIL
+		);
+	}
+
+	private void callThumbnailImageDeleteAfterRollbackEvent(String thumbnailImageUrl) {
+		applicationEventPublisher.publishEvent(
+				new FileDeleteAfterRollbackEvent(thumbnailImageUrl, ImageFileType.COMIC_THUMBNAIL)
+		);
+	}
+
+	private void callThumbnailImageDeleteAfterCommitEvent(Thumbnail thumbnail) {
+		applicationEventPublisher.publishEvent(
+				new FileDeleteAfterCommitEvent(thumbnail.getImageUrl(), ImageFileType.COMIC_THUMBNAIL)
+		);
 	}
 
 	private void validateSameAuthor(Author author, User user) {

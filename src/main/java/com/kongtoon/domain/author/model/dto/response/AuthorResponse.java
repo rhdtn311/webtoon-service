@@ -1,10 +1,10 @@
 package com.kongtoon.domain.author.model.dto.response;
 
-import java.util.List;
-import java.util.Map;
-
 import com.kongtoon.domain.author.model.Author;
 import com.kongtoon.domain.comic.model.Comic;
+
+import java.util.List;
+import java.util.Map;
 
 public record AuthorResponse(
 		String authorName,
@@ -12,6 +12,8 @@ public record AuthorResponse(
 		String belong,
 		List<ComicResponse> comics
 ) {
+
+	private static final int NOT_EXIST_EPISODE_NUMBER = 0;
 
 	public static AuthorResponse from(
 			Author author,
@@ -33,7 +35,6 @@ public record AuthorResponse(
 			String thumbnailUrl,
 			int lastEpisodeNumber
 	) {
-
 		public static List<ComicResponse> from(
 				List<Comic> comics,
 				Map<Long, String> smallThumbnailUrlsOfComic,
@@ -45,7 +46,7 @@ public record AuthorResponse(
 									comic.getName(),
 									comic.isComplete(),
 									smallThumbnailUrlsOfComic.get(comic.getId()),
-									lastEpisodeNumberOfComic.get(comic.getId())
+									lastEpisodeNumberOfComic.getOrDefault(comic.getId(), NOT_EXIST_EPISODE_NUMBER)
 							)
 					).toList();
 		}

@@ -51,4 +51,8 @@ public class Thumbnail extends BaseEntity {
 		this.thumbnailType = thumbnailType;
 		this.imageUrl = imageUrl;
 	}
+
+	public boolean isSmallType() {
+		return thumbnailType.isSameType(ThumbnailType.SMALL);
+	}
 }

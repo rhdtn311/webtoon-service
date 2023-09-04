@@ -1,5 +1,7 @@
 package com.kongtoon.domain.comic.model;
 
+import com.kongtoon.common.exception.BusinessException;
+import com.kongtoon.common.exception.ErrorCode;
 import com.kongtoon.domain.BaseEntity;
 import com.kongtoon.domain.author.model.Author;
 import lombok.AccessLevel;
@@ -66,5 +68,13 @@ public class Comic extends BaseEntity {
 		this.genre = genre;
 		this.summary = summary;
 		this.publishDayOfWeek = publishDayOfWeek;
+	}
+
+	public String getSmallTypeThumbnailUrl() {
+		return thumbnails.stream()
+				.filter(Thumbnail::isSmallType)
+				.map(Thumbnail::getImageUrl)
+				.findFirst()
+				.orElseThrow(() -> new BusinessException(ErrorCode.NOT_EXISTS_THUMBNAIL_TYPE));
 	}
 }

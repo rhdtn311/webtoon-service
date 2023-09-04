@@ -7,10 +7,7 @@ import com.kongtoon.domain.author.model.dto.request.AuthorCreateRequest;
 import com.kongtoon.domain.author.model.dto.response.AuthorResponse;
 import com.kongtoon.domain.author.repository.AuthorRepository;
 import com.kongtoon.domain.comic.model.Comic;
-import com.kongtoon.domain.comic.model.Thumbnail;
-import com.kongtoon.domain.comic.model.ThumbnailType;
 import com.kongtoon.domain.comic.repository.ComicRepository;
-import com.kongtoon.domain.comic.repository.ThumbnailRepository;
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.episode.repository.EpisodeRepository;
 import com.kongtoon.domain.user.model.LoginId;
@@ -21,21 +18,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
 public class AuthorService {
 
-	private static final int NOT_EXIST_EPISODE_NUMBER = 0;
-	private static final String NOT_EXIST_SMALL_THUMBNAIL = "EMPTY";
-
 	private final AuthorRepository authorRepository;
 	private final UserRepository userRepository;
 	private final ComicRepository comicRepository;
-	private final ThumbnailRepository thumbnailRepository;
 	private final EpisodeRepository episodeRepository;
 
 	@Transactional
@@ -67,10 +61,11 @@ public class AuthorService {
 	public AuthorResponse getAuthorResponse(Long authorId) {
 		Author author = getAuthor(authorId);
 
-		List<Comic> comics = comicRepository.findByAuthor(author);
+		List<Comic> comics = comicRepository.findByAuthorWithThumbnails(author);
+		List<Episode> episodes = episodeRepository.findRecentlyEpisodesByComics(comics);
 
-		Map<Long, String> smallThumbnailUrlsOfComic = getSmallThumbnailUrlsOfComic(comics);
-		Map<Long, Integer> lastEpisodeNumbersOfComic = getLastEpisodeNumbersOfComic(comics);
+		Map<Long, String> smallThumbnailUrlsOfComic = getComicIdWithSmallThumbnailUrl(comics);
+		Map<Long, Integer> lastEpisodeNumbersOfComic = getComicIdWithLastEpisodeNumber(episodes);
 
 		return AuthorResponse.from(author, comics, smallThumbnailUrlsOfComic, lastEpisodeNumbersOfComic);
 	}
@@ -80,47 +75,13 @@ public class AuthorService {
 				.orElseThrow(() -> new BusinessException(ErrorCode.AUTHOR_NOT_FOUND));
 	}
 
-	private Map<Long, String> getSmallThumbnailUrlsOfComic(List<Comic> comics) {
-		Map<Long, String> comicIdsWithSmallThumbnailUrls = new HashMap<>();
-		setComicIdsWithDefaultThumbnailUrlsToMap(comics, comicIdsWithSmallThumbnailUrls);
-
-		List<Thumbnail> thumbnails = thumbnailRepository.findByComicInAndThumbnailType(comics, ThumbnailType.SMALL);
-		setThumbnailImageUrlsToMap(thumbnails, comicIdsWithSmallThumbnailUrls);
-
-		return comicIdsWithSmallThumbnailUrls;
+	private Map<Long, String> getComicIdWithSmallThumbnailUrl(List<Comic> comics) {
+		return comics.stream()
+				.collect(toMap(Comic::getId, Comic::getSmallTypeThumbnailUrl));
 	}
 
-	private void setComicIdsWithDefaultThumbnailUrlsToMap(List<Comic> comics, Map<Long, String> comicIdsWithSmallThumbnailUrls) {
-		comics.forEach(comic ->
-				comicIdsWithSmallThumbnailUrls.put(comic.getId(), NOT_EXIST_SMALL_THUMBNAIL)
-		);
-	}
-
-	private void setThumbnailImageUrlsToMap(List<Thumbnail> thumbnails, Map<Long, String> comicIdsWithSmallThumbnailUrls) {
-		thumbnails.forEach(thumbnail ->
-				comicIdsWithSmallThumbnailUrls.put(thumbnail.getComic().getId(), thumbnail.getImageUrl())
-		);
-	}
-
-	private Map<Long, Integer> getLastEpisodeNumbersOfComic(List<Comic> comics) {
-		Map<Long, Integer> comicIdsWithLastEpisodeNumbers = new HashMap<>();
-		setComicIdsWithDefaultEpisodeNumberToMap(comics, comicIdsWithLastEpisodeNumbers);
-
-		List<Episode> episodes = episodeRepository.findRecentlyEpisodesByComics(comics);
-		setEpisodeNumbersToMap(episodes, comicIdsWithLastEpisodeNumbers);
-
-		return comicIdsWithLastEpisodeNumbers;
-	}
-
-	private void setComicIdsWithDefaultEpisodeNumberToMap(List<Comic> comics, Map<Long, Integer> comicIdsWithLastEpisodeNumbers) {
-		comics.forEach(comic ->
-				comicIdsWithLastEpisodeNumbers.put(comic.getId(), NOT_EXIST_EPISODE_NUMBER)
-		);
-	}
-
-	private void setEpisodeNumbersToMap(List<Episode> episodes, Map<Long, Integer> comicIdsWithLastEpisodeNumbers) {
-		episodes.forEach(episode ->
-				comicIdsWithLastEpisodeNumbers.put(episode.getComic().getId(), episode.getEpisodeNumber())
-		);
+	private Map<Long, Integer> getComicIdWithLastEpisodeNumber(List<Episode> episodes) {
+		return episodes.stream()
+				.collect(toMap(Episode::getComicId, Episode::getEpisodeNumber));
 	}
 }

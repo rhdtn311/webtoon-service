@@ -1,27 +1,14 @@
 package com.kongtoon.domain.comic.model;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-
 import com.kongtoon.domain.BaseEntity;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "thumbnail")
@@ -52,7 +39,12 @@ public class Thumbnail extends BaseEntity {
 	public Thumbnail(ThumbnailType thumbnailType, String imageUrl, Comic comic) {
 		this.thumbnailType = thumbnailType;
 		this.imageUrl = imageUrl;
+
+		if (this.comic != null) {
+			this.comic.getThumbnails().remove(this);
+		}
 		this.comic = comic;
+		comic.getThumbnails().add(this);
 	}
 
 	public void update(ThumbnailType thumbnailType, String imageUrl) {

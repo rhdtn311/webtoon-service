@@ -1,28 +1,17 @@
 package com.kongtoon.domain.comic.model;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-
 import com.kongtoon.domain.BaseEntity;
 import com.kongtoon.domain.author.model.Author;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "comic")
@@ -59,6 +48,9 @@ public class Comic extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "author_id", nullable = false)
 	private Author author;
+
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "comic")
+	private List<Thumbnail> thumbnails = new ArrayList<>();
 
 	public Comic(String name, Genre genre, String summary, PublishDayOfWeek publishDayOfWeek, Author author) {
 		this.isComplete = false;

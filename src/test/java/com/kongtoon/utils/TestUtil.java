@@ -3,9 +3,12 @@ package com.kongtoon.utils;
 import com.kongtoon.domain.author.model.Author;
 import com.kongtoon.domain.comic.model.*;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
+import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
+import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
 import com.kongtoon.domain.user.model.*;
+import com.kongtoon.domain.view.model.View;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -132,9 +135,25 @@ public class TestUtil {
 				name, genre, summary, publishDayOfWeek, author);
 	}
 
+	public static Episode createEpisode(String title, int episodeNumber, String thumbnailUrl, Comic comic) {
+		return new Episode(title, episodeNumber, thumbnailUrl, comic);
+	}
+
+	public static View createView(User user, Episode episode) {
+		return new View(user, episode);
+	}
+
 	public static Thumbnail createThumbnail(ThumbnailType thumbnailType, String imageUrl, Comic comic) {
 		return new Thumbnail(
 				thumbnailType, imageUrl, comic);
+	}
+
+	public static List<ComicByGenreResponse> createActionGenreComics() {
+		return List.of(
+				new ComicByGenreResponse(1L, "name1", "author1", "thumbnailUrl1", true, 1),
+				new ComicByGenreResponse(2L, "name2", "author2", "thumbnailUrl2", false, 5),
+				new ComicByGenreResponse(3L, "name3", "author3", "thumbnailUrl3", false, 3)
+		);
 	}
 
 	public static <T> String createMultipartRequestBody(List<T> parts) throws IOException {

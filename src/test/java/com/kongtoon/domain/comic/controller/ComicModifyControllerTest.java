@@ -62,7 +62,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @SpringBootTest
-class ComicControllerTest {
+class ComicModifyControllerTest {
 
     private static final String CREATE_COMIC_TAG = "웹툰 생성";
     private static final String CREATE_COMIC_SUMMARY = "웹툰 생성 성공, 실패 APIs";

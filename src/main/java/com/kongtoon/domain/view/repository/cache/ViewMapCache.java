@@ -3,16 +3,20 @@ package com.kongtoon.domain.view.repository.cache;
 import com.kongtoon.domain.episode.model.Episode;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.view.model.View;
+import com.kongtoon.domain.view.repository.ViewJdbcRepository;
 import com.kongtoon.domain.view.repository.ViewRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ViewMapCache implements ViewCache {
@@ -20,6 +24,7 @@ public class ViewMapCache implements ViewCache {
     private static final Map<String, Map<String, View>> viewCache = new HashMap<>();
 
     private final ViewRepository viewRepository;
+    private final ViewJdbcRepository viewJdbcRepository;
 
     @Override
     public void save(User user, Episode episode) {
@@ -84,5 +89,13 @@ public class ViewMapCache implements ViewCache {
     private void init() {
         viewCache.put(INSERT_MAP_MAIN_KEY, new ConcurrentHashMap<>());
         viewCache.put(UPDATE_MAP_MAIN_KEY, new ConcurrentHashMap<>());
+    }
+
+    @PreDestroy
+    private void sendRemainViewDataToStorage() {
+        log.info("메모리에 남은 조회 데이터 DB에 삽입");
+
+        viewJdbcRepository.batchInsert(getValues(ViewCache.INSERT_MAP_MAIN_KEY));
+        viewJdbcRepository.batchUpdate(getValues(ViewCache.UPDATE_MAP_MAIN_KEY));
     }
 }

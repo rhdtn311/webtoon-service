@@ -71,6 +71,18 @@ public class ViewMapCache implements ViewCache {
                 .size() >= LIMIT_SIZE;
     }
 
+    @Override
+    public synchronized void batchInsertToDB() {
+        viewJdbcRepository.batchInsert(getValues(ViewCache.INSERT_MAP_MAIN_KEY));
+        clear(ViewCache.INSERT_MAP_MAIN_KEY);
+    }
+
+    @Override
+    public synchronized void batchUpdateToDB() {
+        viewJdbcRepository.batchUpdate(getValues(ViewCache.UPDATE_MAP_MAIN_KEY));
+        clear(ViewCache.UPDATE_MAP_MAIN_KEY);
+    }
+
     private void saveKeyInInsertMap(View view, String subKey, Map<String, View> viewsForInsert) {
         if (existsKey(INSERT_MAP_MAIN_KEY, subKey)) {
             View findView = viewsForInsert.get(subKey);

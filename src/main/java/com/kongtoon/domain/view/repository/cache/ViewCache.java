@@ -29,4 +29,8 @@ public interface ViewCache {
     boolean checkInsert();
 
     boolean checkUpdate();
+
+    void batchInsertToDB();
+
+    void batchUpdateToDB();
 }

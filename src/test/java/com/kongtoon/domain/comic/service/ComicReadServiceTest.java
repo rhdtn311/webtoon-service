@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static com.kongtoon.utils.TestUtil.createActionGenreComics;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -39,6 +38,14 @@ class ComicReadServiceTest {
 
         // then
         assertThat(comicsByAnyGenreResult).containsAll(expectedComicsByGenre);
+    }
+
+    public List<ComicByGenreResponse> createActionGenreComics() {
+        return List.of(
+                ComicDummy.createComicResponse(1L),
+                ComicDummy.createComicResponse(2L),
+                ComicDummy.createComicResponse(3L)
+        );
     }
 
     private List<ComicByGenreResponse> getComicsByActionGenre(List<ComicByGenreResponse> comicByGenreResponses) {

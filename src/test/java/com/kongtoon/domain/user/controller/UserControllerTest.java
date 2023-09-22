@@ -9,8 +9,12 @@ import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.user.dto.UserAuthDTO;
 import com.kongtoon.domain.user.dto.request.LoginRequest;
 import com.kongtoon.domain.user.dto.request.SignupRequest;
-import com.kongtoon.domain.user.model.*;
+import com.kongtoon.domain.user.model.Email;
+import com.kongtoon.domain.user.model.LoginId;
+import com.kongtoon.domain.user.model.Password;
+import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
+import com.kongtoon.support.dummy.UserDummy;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,7 +37,6 @@ import java.util.stream.Stream;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.kongtoon.utils.TestConst.*;
-import static com.kongtoon.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
@@ -88,10 +91,8 @@ class UserControllerTest {
 	private static final String LOGIN_REQ_SCHEMA = "LoginRequest";
 	private static final String LOGIN_LOGIN_ID_REQ_FIELD = "loginId";
 	private static final String LOGIN_LOGIN_ID_ID_VALUE_REQ_FIELD = "loginId.idValue";
-	private static final String LOGIN_PASSWORD_REQ_FIELD = "password";
 	private static final String LOGIN_LOGIN_ID_REQ_DESCRIPTION = "로그인ID 정보";
 	private static final String LOGIN_LOGIN_ID_ID_VALUE_REQ_DESCRIPTION = "로그인ID";
-	private static final String LOGIN_PASSWORD_REQ_DESCRIPTION = "비밀번호";
 
 	private static final String LOGOUT_TAG = "로그아웃";
 	private static final String LOGOUT_SUMMARY = "로그아웃 성공, 실패 APIs";
@@ -112,7 +113,7 @@ class UserControllerTest {
 	@DisplayName("회원가입에 성공한다.")
 	void signupSuccess() throws Exception {
 		// given
-		SignupRequest signupRequest = createSignupRequest();
+		SignupRequest signupRequest = UserDummy.createSignupRequest();
 
 		// when
 		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup")
@@ -161,11 +162,11 @@ class UserControllerTest {
 		Email savedEmail = new Email("savedEmail@email.com");
 		LoginId savedLoginId = new LoginId("savedLoginId");
 
-		User user = createUser(savedEmail, savedLoginId);
+		User user = UserDummy.createUser(savedEmail, savedLoginId);
 		userRepository.save(user);
 
 		LoginId newLoginId = new LoginId("newLoginId");
-		SignupRequest signupRequest = createSignupRequest(newLoginId, savedEmail);
+		SignupRequest signupRequest = UserDummy.createSignupRequest(newLoginId, savedEmail);
 
 		long beforeUserCount = userRepository.count();
 
@@ -218,11 +219,11 @@ class UserControllerTest {
 		Email savedEmail = new Email("savedEmail@email.com");
 		LoginId savedLoginId = new LoginId("savedLoginId");
 
-		User user = createUser(savedEmail, savedLoginId);
+		User user = UserDummy.createUser(savedEmail, savedLoginId);
 		userRepository.save(user);
 
 		Email newEmail = new Email("newEmail@email.com");
-		SignupRequest signupRequest = createSignupRequest(savedLoginId, newEmail);
+		SignupRequest signupRequest = UserDummy.createSignupRequest(savedLoginId, newEmail);
 
 		long beforeUserCount = userRepository.count();
 
@@ -275,7 +276,7 @@ class UserControllerTest {
 
 		// given
 		LoginId validLoginId = new LoginId("loginId");
-		SignupRequest signupRequest = createSignupRequest(validLoginId, invalidEmail);
+		SignupRequest signupRequest = UserDummy.createSignupRequest(validLoginId, invalidEmail);
 		long beforeUserCount = userRepository.count();
 
 		// when
@@ -369,7 +370,7 @@ class UserControllerTest {
 		// given
 		LoginId loginId = new LoginId("dupLoginId");
 		Email email = new Email("email@email.com");
-		User user = createUser(email, loginId);
+		User user = UserDummy.createUser(email, loginId);
 		userRepository.save(user);
 
 		// when
@@ -440,7 +441,7 @@ class UserControllerTest {
 		// given
 		Email email = new Email("dupEmail@email.com");
 		LoginId loginId = new LoginId("loginId");
-		User user = createUser(email, loginId);
+		User user = UserDummy.createUser(email, loginId);
 		userRepository.save(user);
 
 		// when
@@ -478,10 +479,9 @@ class UserControllerTest {
 	@DisplayName("로그인에 성공한다.")
 	void loginSuccess() throws Exception {
 		// given
-		LoginRequest loginRequest = createLoginRequest();
-		Email email = new Email("email@email.com");
+		LoginRequest loginRequest = UserDummy.createLoginRequest();
 		Password password = new Password(passwordEncoder.encrypt(loginRequest.password().getPasswordValue()));
-		User user = createUser(email, loginRequest.loginId(), password);
+		User user = UserDummy.createUser(loginRequest.loginId(), password);
 
 		userRepository.save(user);
 
@@ -517,7 +517,7 @@ class UserControllerTest {
 	@DisplayName("로그인시 존재하지 않는 로그인 ID로 실패한다.")
 	void loginNotExistLoginIdFail() throws Exception {
 		// given
-		LoginRequest loginRequest = createLoginRequest();
+		LoginRequest loginRequest = UserDummy.createLoginRequest();
 
 		// when
 		ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.post("/users/login")
@@ -559,10 +559,9 @@ class UserControllerTest {
 	@DisplayName("로그인시 비밀번호 불일치로 실패한다.")
 	void loginPasswordMismatchFail() throws Exception {
 		// given
-		LoginRequest loginRequest = createLoginRequest();
-		Email email = new Email("email@email.com");
+		LoginRequest loginRequest = UserDummy.createLoginRequest();
 		Password mismatchPassword = new Password(passwordEncoder.encrypt("mismatchPassword"));
-		User user = createUser(email, loginRequest.loginId(), mismatchPassword);
+		User user = UserDummy.createUser(loginRequest.loginId(), mismatchPassword);
 
 		userRepository.save(user);
 
@@ -596,8 +595,7 @@ class UserControllerTest {
 	@DisplayName("로그아웃에 성공한다.")
 	void logoutSuccess() throws Exception {
 		// given
-		LoginId loginId = new LoginId("loginId");
-		UserAuthDTO user = new UserAuthDTO(1L, loginId, UserAuthority.USER);
+		UserAuthDTO user = UserDummy.createUserAuth();
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, user);
 

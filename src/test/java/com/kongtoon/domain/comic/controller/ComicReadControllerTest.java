@@ -6,7 +6,10 @@ import com.kongtoon.common.security.PasswordEncoder;
 import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.author.model.Author;
 import com.kongtoon.domain.author.repository.AuthorRepository;
-import com.kongtoon.domain.comic.model.*;
+import com.kongtoon.domain.comic.model.Comic;
+import com.kongtoon.domain.comic.model.Genre;
+import com.kongtoon.domain.comic.model.RealtimeComicRanking;
+import com.kongtoon.domain.comic.model.Thumbnail;
 import com.kongtoon.domain.comic.model.dto.response.vo.TwoHourSlice;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.RealtimeComicRankingRepository;
@@ -21,9 +24,7 @@ import com.kongtoon.domain.user.model.UserAuthority;
 import com.kongtoon.domain.user.repository.UserRepository;
 import com.kongtoon.domain.view.repository.ViewRepository;
 import com.kongtoon.support.RequestUtil;
-import com.kongtoon.support.dummy.ComicDummy;
-import com.kongtoon.support.dummy.RealtimeComicRankingDummy;
-import com.kongtoon.support.dummy.ThumbnailDummy;
+import com.kongtoon.support.dummy.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
-import static com.kongtoon.utils.TestUtil.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -254,25 +254,25 @@ public class ComicReadControllerTest {
     }
 
     private Comic saveComic(String name, Genre genre) {
-        Comic comic = createComic(name, genre, "summary", PublishDayOfWeek.MON, author);
+        Comic comic = ComicDummy.createComic(name, genre, author);
         comicRepository.save(comic);
 
         return comic;
     }
 
     private Thumbnail saveThumbnail(String thumbnailUrl, Comic comic) {
-        return thumbnailRepository.save(createThumbnail(ThumbnailType.MAIN, thumbnailUrl, comic));
+        return thumbnailRepository.save(ThumbnailDummy.createMainTypeThumbnail(thumbnailUrl, comic));
     }
 
     private void giveViewsToComicLimitFive(Comic comic, int viewCount) {
         if (viewCount > 5) {
             throw new IllegalArgumentException("조회수는 5이하로 넣어주세요.");
         }
-        Episode episode = createEpisode("episode", 1, "thumbnailUrl", comic);
+        Episode episode = EpisodeDummy.createEpisode(comic);
         episodeRepository.save(episode);
 
         for (int i = 0; i < viewCount; i++) {
-            viewRepository.save(createView(viewers.get(i), episode));
+            viewRepository.save(ViewDummy.createView(viewers.get(i), episode));
         }
     }
 
@@ -293,14 +293,14 @@ public class ComicReadControllerTest {
 
     @BeforeEach
     void init() {
-        user = createUser(UserAuthority.AUTHOR);
-        author = createAuthor(user);
+        user = UserDummy.createUser(UserAuthority.AUTHOR);
+        author = AuthorDummy.createAuthor(user);
 
-        User viewer1 = createUser(new Email("email1@email.com"), new LoginId("loginId1"));
-        User viewer2 = createUser(new Email("email2@email.com"), new LoginId("loginId2"));
-        User viewer3 = createUser(new Email("email3@email.com"), new LoginId("loginId3"));
-        User viewer4 = createUser(new Email("email4@email.com"), new LoginId("loginId4"));
-        User viewer5 = createUser(new Email("email5@email.com"), new LoginId("loginId5"));
+        User viewer1 = UserDummy.createUser(new Email("email1@email.com"), new LoginId("loginId1"));
+        User viewer2 = UserDummy.createUser(new Email("email2@email.com"), new LoginId("loginId2"));
+        User viewer3 = UserDummy.createUser(new Email("email3@email.com"), new LoginId("loginId3"));
+        User viewer4 = UserDummy.createUser(new Email("email4@email.com"), new LoginId("loginId4"));
+        User viewer5 = UserDummy.createUser(new Email("email5@email.com"), new LoginId("loginId5"));
         viewers = List.of(viewer1, viewer2, viewer3, viewer4, viewer5);
         userRepository.saveAll(viewers);
 

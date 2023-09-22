@@ -19,6 +19,11 @@ import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
 import com.kongtoon.domain.user.repository.UserRepository;
+import com.kongtoon.support.RequestUtil;
+import com.kongtoon.support.dummy.AuthorDummy;
+import com.kongtoon.support.dummy.ComicDummy;
+import com.kongtoon.support.dummy.FileDummy;
+import com.kongtoon.support.dummy.UserDummy;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +49,6 @@ import java.util.List;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
 import static com.kongtoon.utils.TestConst.*;
-import static com.kongtoon.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -108,19 +112,19 @@ class ComicModifyControllerTest {
     @DisplayName("웬툰 생성에 성공한다.")
     void createComicSuccess() throws Exception {
         // given
-        User user = createUser(UserAuthority.AUTHOR);
-        Author author = createAuthor(user);
+        User user = UserDummy.createUser(UserAuthority.AUTHOR);
+        Author author = AuthorDummy.createAuthor(user);
         userRepository.save(user);
         authorRepository.save(author);
 
-        ComicRequest comicRequest = createComicRequest();
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(user.getId(), user.getLoginId(), user.getAuthority()));
 
         MockMultipartFile thumbnailRequestThumbnailImageSmallFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
         MockMultipartFile thumbnailRequestThumbnailImageMainFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
         MockPart comicRequestComicNameFieldMock = new MockPart(COMIC_REQUEST_COMIC_NAME_FIELD, comicRequest.getComicName().getBytes());
         MockPart comicRequestGenreFieldMock = new MockPart(COMIC_REQUEST_GENRE_FIELD, comicRequest.getGenre().toString().getBytes());
         MockPart comicRequestSummaryFieldMock = new MockPart(COMIC_REQUEST_SUMMARY_FIELD, comicRequest.getSummary().getBytes());
@@ -145,7 +149,7 @@ class ComicModifyControllerTest {
                 .part(comicRequestPublishDayOfWeekMock)
                 .part(comicRequestThumbnailTypeSmallFieldMock)
                 .part(thumbnailRequestThumbnailTypeMainFieldMock)
-                .content(createMultipartRequestBody(
+                .content(RequestUtil.createMultipartRequestBody(
                         List.of(
                                 comicRequestComicNameFieldMock,
                                 comicRequestGenreFieldMock,
@@ -198,14 +202,14 @@ class ComicModifyControllerTest {
     @DisplayName("웬툰 생성 시 요청하는 사용자가 존재하지 않아 실패한다.")
     void createComicNotExistsUserFail() throws Exception {
         // given
-        ComicRequest comicRequest = createComicRequest();
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(0L, new LoginId("notExistLoginId"), UserAuthority.AUTHOR));
 
         MockMultipartFile thumbnailRequestThumbnailImageSmallFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
         MockMultipartFile thumbnailRequestThumbnailImageMainFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
         MockPart comicRequestComicNameFieldMock = new MockPart(COMIC_REQUEST_COMIC_NAME_FIELD, comicRequest.getComicName().getBytes());
         MockPart comicRequestGenreFieldMock = new MockPart(COMIC_REQUEST_GENRE_FIELD, comicRequest.getGenre().toString().getBytes());
         MockPart comicRequestSummaryFieldMock = new MockPart(COMIC_REQUEST_SUMMARY_FIELD, comicRequest.getSummary().getBytes());
@@ -223,7 +227,7 @@ class ComicModifyControllerTest {
                 .part(comicRequestPublishDayOfWeekMock)
                 .part(comicRequestThumbnailTypeSmallFieldMock)
                 .part(thumbnailRequestThumbnailTypeMainFieldMock)
-                .content(createMultipartRequestBody(
+                .content(RequestUtil.createMultipartRequestBody(
                         List.of(
                                 comicRequestComicNameFieldMock,
                                 comicRequestGenreFieldMock,
@@ -275,16 +279,16 @@ class ComicModifyControllerTest {
     @DisplayName("웬툰 생성 시 요청하는 작가가 존재하지 않아 실패한다.")
     void createComicNotExistsAuthorFail() throws Exception {
         // given
-        ComicRequest comicRequest = createComicRequest();
-        User user = createUser(UserAuthority.AUTHOR);
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
+        User user = UserDummy.createUser(UserAuthority.AUTHOR);
         userRepository.save(user);
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(user.getId(), user.getLoginId(), UserAuthority.AUTHOR));
 
         MockMultipartFile thumbnailRequestThumbnailImageSmallFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
         MockMultipartFile thumbnailRequestThumbnailImageMainFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
         MockPart comicRequestComicNameFieldMock = new MockPart(COMIC_REQUEST_COMIC_NAME_FIELD, comicRequest.getComicName().getBytes());
         MockPart comicRequestGenreFieldMock = new MockPart(COMIC_REQUEST_GENRE_FIELD, comicRequest.getGenre().toString().getBytes());
         MockPart comicRequestSummaryFieldMock = new MockPart(COMIC_REQUEST_SUMMARY_FIELD, comicRequest.getSummary().getBytes());
@@ -302,7 +306,7 @@ class ComicModifyControllerTest {
                 .part(comicRequestPublishDayOfWeekMock)
                 .part(comicRequestThumbnailTypeSmallFieldMock)
                 .part(thumbnailRequestThumbnailTypeMainFieldMock)
-                .content(createMultipartRequestBody(
+                .content(RequestUtil.createMultipartRequestBody(
                         List.of(
                                 comicRequestComicNameFieldMock,
                                 comicRequestGenreFieldMock,
@@ -354,17 +358,17 @@ class ComicModifyControllerTest {
     @DisplayName("웬툰 생성 시 요청하는 사용자의 권한 문제로 실패한다.")
     void createComicUnauthorizedFail() throws Exception {
         // given
-        User user = createUser(UserAuthority.USER);
+        User user = UserDummy.createUser(UserAuthority.USER);
         userRepository.save(user);
 
-        ComicRequest comicRequest = createComicRequest();
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(user.getId(), user.getLoginId(), user.getAuthority()));
 
         MockMultipartFile thumbnailRequestThumbnailImageSmallFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
         MockMultipartFile thumbnailRequestThumbnailImageMainFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
         MockPart comicRequestComicNameFieldMock = new MockPart(COMIC_REQUEST_COMIC_NAME_FIELD, comicRequest.getComicName().getBytes());
         MockPart comicRequestGenreFieldMock = new MockPart(COMIC_REQUEST_GENRE_FIELD, comicRequest.getGenre().toString().getBytes());
         MockPart comicRequestSummaryFieldMock = new MockPart(COMIC_REQUEST_SUMMARY_FIELD, comicRequest.getSummary().getBytes());
@@ -382,7 +386,7 @@ class ComicModifyControllerTest {
                 .part(comicRequestPublishDayOfWeekMock)
                 .part(comicRequestThumbnailTypeSmallFieldMock)
                 .part(thumbnailRequestThumbnailTypeMainFieldMock)
-                .content(createMultipartRequestBody(
+                .content(RequestUtil.createMultipartRequestBody(
                         List.of(
                                 comicRequestComicNameFieldMock,
                                 comicRequestGenreFieldMock,
@@ -434,19 +438,19 @@ class ComicModifyControllerTest {
     @DisplayName("웬툰 생성 시 파일 저장소 업로드 문제로 실패한다.")
     void createComicNotUploadedFileFail() throws Exception {
         // given
-        User user = createUser(UserAuthority.AUTHOR);
-        Author author = createAuthor(user);
+        User user = UserDummy.createUser(UserAuthority.AUTHOR);
+        Author author = AuthorDummy.createAuthor(user);
         userRepository.save(user);
         authorRepository.save(author);
 
-        ComicRequest comicRequest = createComicRequest();
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(user.getId(), user.getLoginId(), user.getAuthority()));
 
         MockMultipartFile thumbnailRequestThumbnailImageSmallFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.png", "image/png");
         MockMultipartFile thumbnailRequestThumbnailImageMainFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.png", "image/png");
         MockPart comicRequestComicNameFieldMock = new MockPart(COMIC_REQUEST_COMIC_NAME_FIELD, comicRequest.getComicName().getBytes());
         MockPart comicRequestGenreFieldMock = new MockPart(COMIC_REQUEST_GENRE_FIELD, comicRequest.getGenre().toString().getBytes());
         MockPart comicRequestSummaryFieldMock = new MockPart(COMIC_REQUEST_SUMMARY_FIELD, comicRequest.getSummary().getBytes());
@@ -467,7 +471,7 @@ class ComicModifyControllerTest {
                 .part(comicRequestPublishDayOfWeekMock)
                 .part(comicRequestThumbnailTypeSmallFieldMock)
                 .part(thumbnailRequestThumbnailTypeMainFieldMock)
-                .content(createMultipartRequestBody(
+                .content(RequestUtil.createMultipartRequestBody(
                         List.of(
                                 comicRequestComicNameFieldMock,
                                 comicRequestGenreFieldMock,
@@ -518,19 +522,19 @@ class ComicModifyControllerTest {
     @DisplayName("웬툰 생성 시 잘못된 이미지 파일 확장자 문제로 실패한다.")
     void createComicInvalidFileExtensionFail() throws Exception {
         // given
-        User user = createUser(UserAuthority.AUTHOR);
-        Author author = createAuthor(user);
+        User user = UserDummy.createUser(UserAuthority.AUTHOR);
+        Author author = AuthorDummy.createAuthor(user);
         userRepository.save(user);
         authorRepository.save(author);
 
-        ComicRequest comicRequest = createComicRequest();
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(user.getId(), user.getLoginId(), user.getAuthority()));
 
         MockMultipartFile thumbnailRequestThumbnailImageSmallFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.txt", "text/plain");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_SMALL_FIELD, "small_thumbnail_image.txt", "text/plain");
         MockMultipartFile thumbnailRequestThumbnailImageMainFieldImage
-                = createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.txt", "text/plain");
+                = FileDummy.createMockMultipartFile(THUMBNAIL_REQUEST_THUMBNAIL_IMAGE_MAIN_FIELD, "main_thumbnail_image.txt", "text/plain");
         MockPart comicRequestComicNameFieldMock = new MockPart(COMIC_REQUEST_COMIC_NAME_FIELD, comicRequest.getComicName().getBytes());
         MockPart comicRequestGenreFieldMock = new MockPart(COMIC_REQUEST_GENRE_FIELD, comicRequest.getGenre().toString().getBytes());
         MockPart comicRequestSummaryFieldMock = new MockPart(COMIC_REQUEST_SUMMARY_FIELD, comicRequest.getSummary().getBytes());
@@ -551,7 +555,7 @@ class ComicModifyControllerTest {
                 .part(comicRequestPublishDayOfWeekMock)
                 .part(comicRequestThumbnailTypeSmallFieldMock)
                 .part(thumbnailRequestThumbnailTypeMainFieldMock)
-                .content(createMultipartRequestBody(
+                .content(RequestUtil.createMultipartRequestBody(
                         List.of(
                                 comicRequestComicNameFieldMock,
                                 comicRequestGenreFieldMock,

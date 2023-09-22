@@ -10,7 +10,6 @@ import com.kongtoon.domain.author.model.Author;
 import com.kongtoon.domain.author.repository.AuthorRepository;
 import com.kongtoon.domain.comic.model.Comic;
 import com.kongtoon.domain.comic.model.Thumbnail;
-import com.kongtoon.domain.comic.model.ThumbnailType;
 import com.kongtoon.domain.comic.model.dto.request.ComicRequest;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.ThumbnailRepository;
@@ -18,6 +17,10 @@ import com.kongtoon.domain.user.model.Email;
 import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
+import com.kongtoon.support.dummy.AuthorDummy;
+import com.kongtoon.support.dummy.ComicDummy;
+import com.kongtoon.support.dummy.ThumbnailDummy;
+import com.kongtoon.support.dummy.UserDummy;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Optional;
 
-import static com.kongtoon.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -64,17 +66,15 @@ class ComicModifyServiceTest {
     void createComicSuccess() throws IOException {
 
         // given
-        ComicRequest comicRequest = createComicRequest();
-        LoginId loginId = new LoginId("loginId");
-        Email email = new Email("email@email.com");
-        User user = createUser(email, loginId);
-        Author author = createAuthor(user);
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
+        User user = UserDummy.createUser();
+        Author author = AuthorDummy.createAuthor(user);
         String uploadedThumbnailImageUrl1 = "uploadedThumbnailImageUrl1";
         String uploadedThumbnailImageUrl2 = "uploadedThumbnailImageUrl2";
-        Comic comic = createComic(comicRequest.getComicName(), comicRequest.getGenre(), comicRequest.getSummary(), comicRequest.getPublishDayOfWeek(), author);
-        Thumbnail thumbnail = createThumbnail(ThumbnailType.SMALL, uploadedThumbnailImageUrl1, comic);
+        Comic comic = ComicDummy.createComic(comicRequest.getComicName(), author);
+        Thumbnail thumbnail = ThumbnailDummy.createSmallTypeThumbnail(uploadedThumbnailImageUrl1, comic);
 
-        when(userRepository.findByLoginId(loginId))
+        when(userRepository.findByLoginId(user.getLoginId()))
                 .thenReturn(Optional.of(user));
         when(authorRepository.findByUser(user))
                 .thenReturn(Optional.of(author));
@@ -92,7 +92,7 @@ class ComicModifyServiceTest {
                 );
 
         // when
-        comicModifyService.createComic(comicRequest, loginId);
+        comicModifyService.createComic(comicRequest, user.getLoginId());
 
         // then
         verify(comicRepository).save(any(Comic.class));
@@ -107,7 +107,7 @@ class ComicModifyServiceTest {
     void createComicNotExistsUserFail() throws IOException {
 
         // given
-        ComicRequest comicRequest = createComicRequest();
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
         LoginId loginId = new LoginId("loginId");
 
         when(userRepository.findByLoginId(loginId))
@@ -124,10 +124,10 @@ class ComicModifyServiceTest {
     void createComicNotExistsAuthorFail() throws IOException {
 
         // given
-        ComicRequest comicRequest = createComicRequest();
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
         LoginId loginId = new LoginId("loginId");
         Email email = new Email("email@email.com");
-        User user = createUser(email, loginId);
+        User user = UserDummy.createUser(email, loginId);
 
         when(userRepository.findByLoginId(loginId))
                 .thenReturn(Optional.of(user));
@@ -147,11 +147,11 @@ class ComicModifyServiceTest {
     void createComicNotUploadedFileFail() throws IOException {
 
         // given
-        ComicRequest comicRequest = createComicRequest();
+        ComicRequest comicRequest = ComicDummy.createComicRequest();
         LoginId loginId = new LoginId("loginId");
         Email email = new Email("email@email.com");
-        User user = createUser(email, loginId);
-        Author author = createAuthor(user);
+        User user = UserDummy.createUser(email, loginId);
+        Author author = AuthorDummy.createAuthor(user);
 
         when(userRepository.findByLoginId(loginId))
                 .thenReturn(Optional.of(user));

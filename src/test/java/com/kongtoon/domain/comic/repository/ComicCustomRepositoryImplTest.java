@@ -4,7 +4,6 @@ import com.kongtoon.domain.author.model.Author;
 import com.kongtoon.domain.author.repository.AuthorRepository;
 import com.kongtoon.domain.comic.model.Comic;
 import com.kongtoon.domain.comic.model.Genre;
-import com.kongtoon.domain.comic.model.PublishDayOfWeek;
 import com.kongtoon.domain.comic.model.RealtimeComicRanking;
 import com.kongtoon.domain.comic.model.dto.response.ComicByGenreResponse;
 import com.kongtoon.domain.comic.model.dto.response.ComicByRealtimeRankingResponse;
@@ -16,10 +15,7 @@ import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import com.kongtoon.domain.view.repository.ViewRepository;
-import com.kongtoon.support.dummy.AuthorDummy;
-import com.kongtoon.support.dummy.ComicDummy;
-import com.kongtoon.support.dummy.RealtimeComicRankingDummy;
-import com.kongtoon.support.dummy.UserDummy;
+import com.kongtoon.support.dummy.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.kongtoon.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -153,15 +148,15 @@ class ComicCustomRepositoryImplTest {
     }
 
     private Comic saveActionGenreComic(String name) {
-        return comicRepository.save(createComic(name, Genre.ACTION, "summary", PublishDayOfWeek.MON, author));
+        return comicRepository.save(ComicDummy.createComic(name, Genre.ACTION, author));
     }
 
     private void saveActionAndDramaGenreComics() {
-        Comic actionComic2 = createComic("actionName2", Genre.ACTION, "actionSummary2", PublishDayOfWeek.MON, author);
-        Comic actionComic1 = createComic("actionName1", Genre.ACTION, "actionSummary1", PublishDayOfWeek.MON, author);
-        Comic actionComic3 = createComic("actionName3", Genre.ACTION, "actionSummary3", PublishDayOfWeek.TUE, author);
-        Comic dramaComic1 = createComic("dramaName1", Genre.DRAMA, "dramaSummary1", PublishDayOfWeek.TUE, author);
-        Comic dramaComic2 = createComic("dramaName2", Genre.DRAMA, "dramaSummary2", PublishDayOfWeek.WED, author);
+        Comic actionComic2 = ComicDummy.createComic("actionName2", Genre.ACTION, author);
+        Comic actionComic1 = ComicDummy.createComic("actionName1", Genre.ACTION, author);
+        Comic actionComic3 = ComicDummy.createComic("actionName3", Genre.ACTION, author);
+        Comic dramaComic1 = ComicDummy.createComic("dramaName1", Genre.DRAMA, author);
+        Comic dramaComic2 = ComicDummy.createComic("dramaName2", Genre.DRAMA, author);
 
         comicRepository.saveAll(List.of(actionComic1, actionComic2, actionComic3, dramaComic1, dramaComic2));
     }
@@ -170,20 +165,20 @@ class ComicCustomRepositoryImplTest {
         if (viewCount > 5) {
             throw new IllegalArgumentException("조회수는 5이하로 넣어주세요.");
         }
-        Episode episode = createEpisode("episode", 1, "thumbnailUrl", comic);
+        Episode episode = EpisodeDummy.createEpisode(comic);
         episodeRepository.save(episode);
 
         for (int i = 0; i < viewCount; i++) {
-            viewRepository.save(createView(viewers.get(i), episode));
+            viewRepository.save(ViewDummy.createView(viewers.get(i), episode));
         }
     }
 
     private List<User> setViewers() {
-        User viewer1 = createUser(new Email("email1@email.com"), new LoginId("loginId1"));
-        User viewer2 = createUser(new Email("email2@email.com"), new LoginId("loginId2"));
-        User viewer3 = createUser(new Email("email3@email.com"), new LoginId("loginId3"));
-        User viewer4 = createUser(new Email("email4@email.com"), new LoginId("loginId4"));
-        User viewer5 = createUser(new Email("email5@email.com"), new LoginId("loginId5"));
+        User viewer1 = UserDummy.createUser(new Email("email1@email.com"), new LoginId("loginId1"));
+        User viewer2 = UserDummy.createUser(new Email("email2@email.com"), new LoginId("loginId2"));
+        User viewer3 = UserDummy.createUser(new Email("email3@email.com"), new LoginId("loginId3"));
+        User viewer4 = UserDummy.createUser(new Email("email4@email.com"), new LoginId("loginId4"));
+        User viewer5 = UserDummy.createUser(new Email("email5@email.com"), new LoginId("loginId5"));
         List<User> viewers = List.of(viewer1, viewer2, viewer3, viewer4, viewer5);
         userRepository.saveAll(viewers);
 

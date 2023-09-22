@@ -11,6 +11,7 @@ import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.Password;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
+import com.kongtoon.support.dummy.UserDummy;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,8 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static com.kongtoon.utils.TestUtil.createLoginRequest;
-import static com.kongtoon.utils.TestUtil.createUser;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -47,7 +46,6 @@ class UserServiceTest {
 		Email email = new Email("email@email.com");
 		String nickname = "nickname";
 		Password password = new Password("password");
-		String encryptedPassword = "encryptedPassword";
 
 		SignupRequest signupRequest = new SignupRequest(
 				loginId, name, email, nickname, password
@@ -124,10 +122,9 @@ class UserServiceTest {
 	@DisplayName("로그인에 성공한다.")
 	void loginSuccess() {
 		// given
-		Email email = new Email("email@email.com");
-		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser(email, loginRequest.loginId(), loginRequest.password());
-		UserAuthDTO correctResult = new UserAuthDTO(0L, user.getLoginId(), user.getAuthority());
+		LoginRequest loginRequest = UserDummy.createLoginRequest();
+		User user = UserDummy.createUser(loginRequest.loginId(), loginRequest.password());
+		UserAuthDTO correctResult = UserDummy.createUserAuth(user.getLoginId(), user.getAuthority());
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
 				.thenReturn(Optional.of(user));
@@ -150,7 +147,7 @@ class UserServiceTest {
 	@DisplayName("로그인시 존재하지 않는 로그인 ID로 실패한다.")
 	void loginNotExistLoginIdFail() {
 		// given
-		LoginRequest loginRequest = createLoginRequest();
+		LoginRequest loginRequest = UserDummy.createLoginRequest();
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
 				.thenReturn(Optional.empty());
@@ -167,10 +164,9 @@ class UserServiceTest {
 	@DisplayName("로그인시 비밀번호 불일치로 실패한다.")
 	void loginPasswordMismatchFail() {
 		// given
-		Email email = new Email("email@email.com");
-		LoginRequest loginRequest = createLoginRequest();
+		LoginRequest loginRequest = UserDummy.createLoginRequest();
 		Password mismatchPassword = new Password("mismatchPassword");
-		User user = createUser(email, loginRequest.loginId(), mismatchPassword);
+		User user = UserDummy.createUser(loginRequest.loginId(), mismatchPassword);
 
 		when(userRepository.findByLoginId(loginRequest.loginId()))
 				.thenReturn(Optional.of(user));

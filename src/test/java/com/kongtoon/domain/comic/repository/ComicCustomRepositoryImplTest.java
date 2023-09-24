@@ -106,9 +106,11 @@ class ComicCustomRepositoryImplTest {
             List<ComicByGenreResponse> actionGenreComics = getActionGenreComics();
 
             // then
-            assertThat(actionGenreComics).first().extracting(ComicByGenreResponse::name).isEqualTo(mostViewedComic.getName());
-            assertThat(actionGenreComics).element(1).extracting(ComicByGenreResponse::name).isEqualTo(secondViewedComic.getName());
-            assertThat(actionGenreComics).last().extracting(ComicByGenreResponse::name).isEqualTo(lastViewedComic.getName());
+            assertAll(
+                    () -> assertThat(actionGenreComics).first().extracting(ComicByGenreResponse::name).isEqualTo(mostViewedComic.getName()),
+                    () -> assertThat(actionGenreComics).element(1).extracting(ComicByGenreResponse::name).isEqualTo(secondViewedComic.getName()),
+                    () -> assertThat(actionGenreComics).last().extracting(ComicByGenreResponse::name).isEqualTo(lastViewedComic.getName())
+            );
         }
 
         private Comic saveActionGenreComic(String name) {

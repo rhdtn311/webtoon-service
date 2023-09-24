@@ -121,8 +121,11 @@ class ComicModifyControllerTest {
 
             // then
             assertThat(comics).hasSize(1);
-            resultActions.andExpect(status().isCreated());
-            resultActions.andExpect(header().string("Location", "/comics/" + comic.getId()));
+
+            resultActions.andExpectAll(
+                    status().isCreated(),
+                    header().string("Location", "/comics/" + comic.getId())
+            );
 
             verify(fileStorage, times(2)).upload(any(MultipartFile.class), any(FileType.class));
 
@@ -173,9 +176,11 @@ class ComicModifyControllerTest {
             );
 
             // then
-            resultActions.andExpect(status().isNotFound());
-            resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.USER_NOT_FOUND.getMessage()));
-            resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.USER_NOT_FOUND.name()));
+            resultActions.andExpectAll(
+                    status().isNotFound(),
+                    jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.USER_NOT_FOUND.getMessage()),
+                    jsonPath(ERROR_CODE_FIELD).value(ErrorCode.USER_NOT_FOUND.name())
+            );
 
             // docs
             resultActions.andDo(
@@ -209,9 +214,11 @@ class ComicModifyControllerTest {
             );
 
             // then
-            resultActions.andExpect(status().isNotFound());
-            resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.AUTHOR_NOT_FOUND.getMessage()));
-            resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.AUTHOR_NOT_FOUND.name()));
+            resultActions.andExpectAll(
+                    status().isNotFound(),
+                    jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.AUTHOR_NOT_FOUND.getMessage()),
+                    jsonPath(ERROR_CODE_FIELD).value(ErrorCode.AUTHOR_NOT_FOUND.name())
+            );
 
             // docs
             resultActions.andDo(
@@ -245,9 +252,11 @@ class ComicModifyControllerTest {
             );
 
             // then
-            resultActions.andExpect(status().isForbidden());
-            resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.UNAUTHORIZED.getMessage()));
-            resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.UNAUTHORIZED.name()));
+            resultActions.andExpectAll(
+                    status().isForbidden(),
+                    jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.UNAUTHORIZED.getMessage()),
+                    jsonPath(ERROR_CODE_FIELD).value(ErrorCode.UNAUTHORIZED.name())
+            );
 
             // docs
             resultActions.andDo(
@@ -283,9 +292,11 @@ class ComicModifyControllerTest {
             );
 
             // then
-            resultActions.andExpect(status().isConflict());
-            resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.FILE_NOT_UPLOAD.getMessage()));
-            resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.FILE_NOT_UPLOAD.name()));
+            resultActions.andExpectAll(
+                    status().isConflict(),
+                    jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.FILE_NOT_UPLOAD.getMessage()),
+                    jsonPath(ERROR_CODE_FIELD).value(ErrorCode.FILE_NOT_UPLOAD.name())
+            );
 
             // docs
             resultActions.andDo(
@@ -323,9 +334,11 @@ class ComicModifyControllerTest {
             );
 
             // then
-            resultActions.andExpect(status().isConflict());
-            resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.NOT_ALLOWED_EXTENSION.getMessage()));
-            resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.NOT_ALLOWED_EXTENSION.name()));
+            resultActions.andExpectAll(
+                    status().isConflict(),
+                    jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.NOT_ALLOWED_EXTENSION.getMessage()),
+                    jsonPath(ERROR_CODE_FIELD).value(ErrorCode.NOT_ALLOWED_EXTENSION.name())
+            );
 
             // docs
             resultActions.andDo(
@@ -383,7 +396,6 @@ class ComicModifyControllerTest {
         MockPart comicSmallThumbnailType = new MockPart("thumbnailRequests[0].thumbnailType", comicRequest.getThumbnailRequests().get(0).getThumbnailType().toString().getBytes());
         MockPart comicMainThumbnailType = new MockPart("thumbnailRequests[1].thumbnailType", comicRequest.getThumbnailRequests().get(1).getThumbnailType().toString().getBytes());
 
-        // when
         return mockMvc.perform(RestDocumentationRequestBuilders.multipart("/comics")
                 .file(smallThumbnailFile)
                 .file(mainThumbnailFile)

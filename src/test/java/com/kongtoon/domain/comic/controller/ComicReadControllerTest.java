@@ -123,19 +123,21 @@ public class ComicReadControllerTest {
             ResultActions resultActions = requestGetComicsByGenre(loginSession, setParameterForGenre(requestGenre));
 
             // then
-            resultActions.andExpect(status().isOk());
-            resultActions.andExpect(jsonPath("[0].id").value(mostViewedComic.getId()));
-            resultActions.andExpect(jsonPath("[0].name").value(mostViewedComic.getName()));
-            resultActions.andExpect(jsonPath("[0].author").value(mostViewedComic.getAuthor().getAuthorName()));
-            resultActions.andExpect(jsonPath("[0].thumbnailUrl").value(mostViewComicThumbnail.getImageUrl()));
-            resultActions.andExpect(jsonPath("[0].isNew").value(true));
-            resultActions.andExpect(jsonPath("[0].viewCount").value(5));
-            resultActions.andExpect(jsonPath("[1].id").value(secondViewedComic.getId()));
-            resultActions.andExpect(jsonPath("[1].name").value(secondViewedComic.getName()));
-            resultActions.andExpect(jsonPath("[1].author").value(secondViewedComic.getAuthor().getAuthorName()));
-            resultActions.andExpect(jsonPath("[1].thumbnailUrl").value(secondViewComicThumbnail.getImageUrl()));
-            resultActions.andExpect(jsonPath("[1].isNew").value(true));
-            resultActions.andExpect(jsonPath("[1].viewCount").value(1));
+            resultActions.andExpectAll(
+                    status().isOk(),
+                    jsonPath("[0].id").value(mostViewedComic.getId()),
+                    jsonPath("[0].name").value(mostViewedComic.getName()),
+                    jsonPath("[0].author").value(mostViewedComic.getAuthor().getAuthorName()),
+                    jsonPath("[0].thumbnailUrl").value(mostViewComicThumbnail.getImageUrl()),
+                    jsonPath("[0].isNew").value(true),
+                    jsonPath("[0].viewCount").value(5),
+                    jsonPath("[1].id").value(secondViewedComic.getId()),
+                    jsonPath("[1].name").value(secondViewedComic.getName()),
+                    jsonPath("[1].author").value(secondViewedComic.getAuthor().getAuthorName()),
+                    jsonPath("[1].thumbnailUrl").value(secondViewComicThumbnail.getImageUrl()),
+                    jsonPath("[1].isNew").value(true),
+                    jsonPath("[1].viewCount").value(1)
+            );
 
             // docs
             resultActions.andDo(

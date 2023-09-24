@@ -108,8 +108,10 @@ class UserControllerTest {
 
 			assertThat(findUser).isNotEmpty();
 
-			resultActions.andExpect(status().isCreated());
-			resultActions.andExpect(header().string("Location", "/users/signup/" + findUser.get().getId()));
+			resultActions.andExpectAll(
+					status().isCreated(),
+					header().string("Location", "/users/signup/" + findUser.get().getId())
+			);
 
 			// docs
 			resultActions.andDo(
@@ -154,9 +156,11 @@ class UserControllerTest {
 			ResultActions resultActions = requestSignup(signupRequest);
 
 			// then
-			resultActions.andExpect(status().isConflict());
-			resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_EMAIL.getMessage()));
-			resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_EMAIL.name()));
+			resultActions.andExpectAll(
+					status().isConflict(),
+					jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_EMAIL.getMessage()),
+					jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_EMAIL.name())
+			);
 
 			long afterUserCount = userRepository.count();
 			assertThat(beforeUserCount).isSameAs(afterUserCount);
@@ -196,9 +200,11 @@ class UserControllerTest {
 			ResultActions resultActions = requestSignup(signupRequest);
 
 			// then
-			resultActions.andExpect(status().isConflict());
-			resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()));
-			resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.name()));
+			resultActions.andExpectAll(
+					status().isConflict(),
+					jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()),
+					jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.name())
+			);
 
 			long afterUserCount = userRepository.count();
 			assertThat(beforeUserCount).isSameAs(afterUserCount);
@@ -233,11 +239,13 @@ class UserControllerTest {
 			ResultActions resultActions = requestSignup(signupRequest);
 
 			// then
-			resultActions.andExpect(status().isBadRequest());
-			resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.INVALID_INPUT.getMessage()));
-			resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.INVALID_INPUT.name()));
-			resultActions.andExpect(jsonPath(INPUT_ERROR_INFOS_MESSAGE_FIELD).value("잘못된 형식의 이메일입니다."));
-			resultActions.andExpect(jsonPath(INPUT_ERROR_INFOS_FIELD_FIELD).value("email.address"));
+			resultActions.andExpectAll(
+					status().isBadRequest(),
+					jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.INVALID_INPUT.getMessage()),
+					jsonPath(ERROR_CODE_FIELD).value(ErrorCode.INVALID_INPUT.name()),
+					jsonPath(INPUT_ERROR_INFOS_MESSAGE_FIELD).value("잘못된 형식의 이메일입니다."),
+					jsonPath(INPUT_ERROR_INFOS_FIELD_FIELD).value("email.address")
+			);
 
 			long afterUserCount = userRepository.count();
 			assertThat(beforeUserCount).isSameAs(afterUserCount);
@@ -328,9 +336,11 @@ class UserControllerTest {
 		ResultActions resultActions = requestCheckDuplicateLoginId(loginId.getIdValue());
 
 		// then
-		resultActions.andExpect(status().isConflict());
-		resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()));
-		resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.name()));
+		resultActions.andExpectAll(
+				status().isConflict(),
+				jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.getMessage()),
+				jsonPath(ERROR_CODE_FIELD).value(ErrorCode.DUPLICATE_LOGIN_ID.name())
+		);
 
 		// docs
 		resultActions.andDo(
@@ -401,9 +411,11 @@ class UserControllerTest {
 		ResultActions resultActions = requestCheckDuplicateEmail(email.getAddress());
 
 		// then
-		resultActions.andExpect(status().isConflict());
-		resultActions.andExpect(jsonPath("message").value(ErrorCode.DUPLICATE_EMAIL.getMessage()));
-		resultActions.andExpect(jsonPath("code").value(ErrorCode.DUPLICATE_EMAIL.name()));
+		resultActions.andExpectAll(
+				status().isConflict(),
+				jsonPath("message").value(ErrorCode.DUPLICATE_EMAIL.getMessage()),
+				jsonPath("code").value(ErrorCode.DUPLICATE_EMAIL.name())
+		);
 
 		// docs
 		resultActions.andDo(
@@ -484,9 +496,11 @@ class UserControllerTest {
 			ResultActions resultActions = requestLogin(loginRequest);
 
 			// then
-			resultActions.andExpect(status().isNotFound());
-			resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.USER_NOT_FOUND.getMessage()));
-			resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.USER_NOT_FOUND.name()));
+			resultActions.andExpectAll(
+					status().isNotFound(),
+					jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.USER_NOT_FOUND.getMessage()),
+					jsonPath(ERROR_CODE_FIELD).value(ErrorCode.USER_NOT_FOUND.name())
+			);
 
 			// docs
 			resultActions.andDo(
@@ -519,9 +533,11 @@ class UserControllerTest {
 			ResultActions resultActions = requestLogin(loginRequest);
 
 			// then
-			resultActions.andExpect(status().isConflict());
-			resultActions.andExpect(jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.LOGIN_FAIL.getMessage()));
-			resultActions.andExpect(jsonPath(ERROR_CODE_FIELD).value(ErrorCode.LOGIN_FAIL.name()));
+			resultActions.andExpectAll(
+					status().isConflict(),
+					jsonPath(ERROR_MESSAGE_FIELD).value(ErrorCode.LOGIN_FAIL.getMessage()),
+					jsonPath(ERROR_CODE_FIELD).value(ErrorCode.LOGIN_FAIL.name())
+			);
 
 			// docs
 			resultActions.andDo(

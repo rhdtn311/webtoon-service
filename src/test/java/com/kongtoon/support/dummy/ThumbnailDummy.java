@@ -9,4 +9,9 @@ public class ThumbnailDummy {
         return new Thumbnail(
                 ThumbnailType.SMALL, imageUrl, comic);
     }
+
+    public static Thumbnail createMainTypeThumbnail(String imageUrl, Comic comic) {
+        return new Thumbnail(
+                ThumbnailType.MAIN, imageUrl, comic);
+    }
 }

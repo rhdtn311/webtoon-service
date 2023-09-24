@@ -6,7 +6,10 @@ import com.kongtoon.common.security.PasswordEncoder;
 import com.kongtoon.common.session.UserSessionUtil;
 import com.kongtoon.domain.author.model.Author;
 import com.kongtoon.domain.author.repository.AuthorRepository;
-import com.kongtoon.domain.comic.model.*;
+import com.kongtoon.domain.comic.model.Comic;
+import com.kongtoon.domain.comic.model.Genre;
+import com.kongtoon.domain.comic.model.RealtimeComicRanking;
+import com.kongtoon.domain.comic.model.Thumbnail;
 import com.kongtoon.domain.comic.model.dto.response.vo.TwoHourSlice;
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.domain.comic.repository.RealtimeComicRankingRepository;
@@ -20,12 +23,9 @@ import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.model.UserAuthority;
 import com.kongtoon.domain.user.repository.UserRepository;
 import com.kongtoon.domain.view.repository.ViewRepository;
-import com.kongtoon.support.RequestUtil;
-import com.kongtoon.support.dummy.ComicDummy;
-import com.kongtoon.support.dummy.RealtimeComicRankingDummy;
-import com.kongtoon.support.dummy.ThumbnailDummy;
-import org.junit.jupiter.api.BeforeEach;
+import com.kongtoon.support.dummy.*;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +36,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -45,7 +46,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
-import static com.kongtoon.utils.TestUtil.*;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -61,38 +62,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @SpringBootTest
 public class ComicReadControllerTest {
-
-    private static final String GET_COMICS_BY_GENRE_TAG = "장르별 웹툰 목록 조회";
-    private static final String GET_COMICS_BY_GENRE_SUMMARY = "장르별 웹툰 목록 조회 성공 APIs";
-    private static final String GENRE_PARAM = "genre";
-    private static final String GENRE_PARAM_DESCRIPTION = "조회할 장르";
-    private static final String COMIC_BY_GENRE_RESPONSE_ID_FIELD = "[].id";
-    private static final String COMIC_BY_GENRE_RESPONSE_ID_FIELD_DESCRIPTION = "웹툰 id";
-    private static final String COMIC_BY_GENRE_RESPONSE_NAME_FIELD = "[].name";
-    private static final String COMIC_BY_GENRE_RESPONSE_NAME_FIELD_DESCRIPTION = "웹툰 이름";
-    private static final String COMIC_BY_GENRE_RESPONSE_AUTHOR_FIELD = "[].author";
-    private static final String COMIC_BY_GENRE_RESPONSE_AUTHOR_DESCRIPTION = "웹툰 작가 이름";
-    private static final String COMIC_BY_GENRE_RESPONSE_THUMBNAIL_FIELD = "[].thumbnailUrl";
-    private static final String COMIC_BY_GENRE_RESPONSE_THUMBNAIL_DESCRIPTION = "웹툰 썸네일 URL";
-    private static final String COMIC_BY_GENRE_RESPONSE_IS_NEW_FIELD = "[].isNew";
-    private static final String COMIC_BY_GENRE_RESPONSE_IS_NEW_DESCRIPTION = "신작 웹툰 여부";
-    private static final String COMIC_BY_GENRE_RESPONSE_VIEW_COUNT_FIELD = "[].viewCount";
-    private static final String COMIC_BY_GENRE_RESPONSE_VIEW_COUNT_DESCRIPTION = "최신 에피소드 조회수";
-
-    private static final String GET_COMICS_BY_REALTIME_RANKING_TAG = "실시간 인기 웹툰 목록 조회";
-    private static final String GET_COMICS_BY_REALTIME_RANKING_SUMMARY = "실시간 웹툰 목록 조회 성공 APIs";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_ID_FIELD = "[].id";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_ID_DESCRIPTION = "웹툰 id";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_RANK_FIELD = "[].rank";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_RANK_DESCRIPTION = "랭킹";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_NAME_FIELD = "[].name";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_NAME_DESCRIPTION = "웹툰 이름";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_AUTHOR_FIELD = "[].author";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_AUTHOR_DESCRIPTION = "웹툰 작가 이름";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_THUMBNAIL_FIELD = "[].thumbnailUrl";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_THUMBNAIL_DESCRIPTION = "웹툰 썸네일 URL";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_VIEWS_FIELD = "[].views";
-    private static final String COMICS_BY_REALTIME_RANKING_RESPONSE_VIEWS_DESCRIPTION = "조회수";
 
     @Autowired
     UserRepository userRepository;
@@ -119,194 +88,229 @@ public class ComicReadControllerTest {
     RealtimeComicRankingRepository realtimeComicRankingRepository;
 
     @Autowired
-    ObjectMapper objectMapper;
+    MockMvc mockMvc;
 
     @Autowired
-    RequestUtil requestUtil;
+    ObjectMapper objectMapper;
 
-    User user;
-    Author author;
-    List<User> viewers;
-    MockHttpSession session = new MockHttpSession();
-
+    @Nested
     @Transactional
-    @Test
-    @DisplayName("장르별 웹툰 목록 조회에 성공한다.")
-    void getComicsByGenreSuccess() throws Exception {
-        // given
-        Comic mostViewedComic = saveComic("mostViewedComic", Genre.ACTION);
-        Comic secondViewedComic = saveComic("secondViewedComic", Genre.ACTION);
-        Comic anotherGenreComic = saveComic("anotherGenreComic", Genre.DRAMA);
-        Thumbnail mostViewComicThumbnail = saveThumbnail("mostViewedComicThumbnail", mostViewedComic);
-        Thumbnail secondViewComicThumbnail = saveThumbnail("secondViewComicThumbnail", secondViewedComic);
+    @DisplayName("장르별 웹툰 목록 조회 성공")
+    class GetComicsByGenreSuccess {
 
-        giveViewsToComicLimitFive(mostViewedComic, 5);
-        giveViewsToComicLimitFive(secondViewedComic, 1);
-        giveViewsToComicLimitFive(anotherGenreComic, 3);
+        @Test
+        @DisplayName("장르별 웹툰 목록 조회에 성공한다.")
+        void getComicsByGenreSuccess() throws Exception {
+            // given
+            User user = UserDummy.createUser();
+            MockHttpSession loginSession = loginUser(user.getId(), user.getLoginId(), user.getAuthority());
 
-        String requestGenre = Genre.ACTION.name();
+            Author author = saveAuthor();
+            Comic mostViewedComic = saveComic("mostViewedComic", Genre.ACTION, author);
+            Comic secondViewedComic = saveComic("secondViewedComic", Genre.ACTION, author);
+            Comic anotherGenreComic = saveComic("anotherGenreComic", Genre.DRAMA, author);
+            Thumbnail mostViewComicThumbnail = saveThumbnail("mostViewedComicThumbnail", mostViewedComic);
+            Thumbnail secondViewComicThumbnail = saveThumbnail("secondViewComicThumbnail", secondViewedComic);
 
-        // when
-        ResultActions resultActions = requestUtil.requestGetWithLoginAndParams("/comics/by-genre", user, setParameterForGenre(requestGenre));
+            List<User> viewers = setViewers();
+            giveViewsToComicLimitFive(mostViewedComic, 5, viewers);
+            giveViewsToComicLimitFive(secondViewedComic, 1, viewers);
+            giveViewsToComicLimitFive(anotherGenreComic, 3, viewers);
 
-        // then
-        resultActions.andExpect(status().isOk());
-        resultActions.andExpect(jsonPath("[0].id").value(mostViewedComic.getId()));
-        resultActions.andExpect(jsonPath("[0].name").value(mostViewedComic.getName()));
-        resultActions.andExpect(jsonPath("[0].author").value(mostViewedComic.getAuthor().getAuthorName()));
-        resultActions.andExpect(jsonPath("[0].thumbnailUrl").value(mostViewComicThumbnail.getImageUrl()));
-        resultActions.andExpect(jsonPath("[0].isNew").value(true));
-        resultActions.andExpect(jsonPath("[0].viewCount").value(5));
-        resultActions.andExpect(jsonPath("[1].id").value(secondViewedComic.getId()));
-        resultActions.andExpect(jsonPath("[1].name").value(secondViewedComic.getName()));
-        resultActions.andExpect(jsonPath("[1].author").value(secondViewedComic.getAuthor().getAuthorName()));
-        resultActions.andExpect(jsonPath("[1].thumbnailUrl").value(secondViewComicThumbnail.getImageUrl()));
-        resultActions.andExpect(jsonPath("[1].isNew").value(true));
-        resultActions.andExpect(jsonPath("[1].viewCount").value(1));
+            String requestGenre = Genre.ACTION.name();
 
-        // docs
-        resultActions.andDo(
-                document("장르별 웹툰 목록 조회 성공",
-                        ResourceSnippetParameters.builder()
-                                .tag(GET_COMICS_BY_GENRE_TAG)
-                                .summary(GET_COMICS_BY_GENRE_SUMMARY),
-                        requestParameters(
-                                parameterWithName(GENRE_PARAM).description(GENRE_PARAM_DESCRIPTION)
-                        ),
-                        responseFields(
-                                fieldWithPath(COMIC_BY_GENRE_RESPONSE_ID_FIELD).description(COMIC_BY_GENRE_RESPONSE_ID_FIELD_DESCRIPTION),
-                                fieldWithPath(COMIC_BY_GENRE_RESPONSE_NAME_FIELD).description(COMIC_BY_GENRE_RESPONSE_NAME_FIELD_DESCRIPTION),
-                                fieldWithPath(COMIC_BY_GENRE_RESPONSE_AUTHOR_FIELD).description(COMIC_BY_GENRE_RESPONSE_AUTHOR_DESCRIPTION),
-                                fieldWithPath(COMIC_BY_GENRE_RESPONSE_THUMBNAIL_FIELD).description(COMIC_BY_GENRE_RESPONSE_THUMBNAIL_DESCRIPTION),
-                                fieldWithPath(COMIC_BY_GENRE_RESPONSE_IS_NEW_FIELD).description(COMIC_BY_GENRE_RESPONSE_IS_NEW_DESCRIPTION),
-                                fieldWithPath(COMIC_BY_GENRE_RESPONSE_VIEW_COUNT_FIELD).description(COMIC_BY_GENRE_RESPONSE_VIEW_COUNT_DESCRIPTION)
-                        )
-                )
-        );
-    }
+            // when
+            ResultActions resultActions = requestGetComicsByGenre(loginSession, setParameterForGenre(requestGenre));
 
-    private MultiValueMap<String, String> setParameterForGenre(String requestGenre) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("genre", requestGenre);
-
-        return params;
-    }
-
-    @Transactional
-    @Test
-    @DisplayName("실시간 인기 웹툰 목록 조회에 성공한다.")
-    void getComicsByRealtimeRankingSuccess() throws Exception {
-        // given
-        TwoHourSlice prevTwoHourSlice = getPrevTwoHourSlice();
-        String thumbnailUrl = "thumbnailUrl";
-
-        RealtimeComicRanking rank1ComicName = saveRealtimeComicRanking("rank1ComicName", 1, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank2ComicName = saveRealtimeComicRanking("rank2ComicName", 2, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank3ComicName = saveRealtimeComicRanking("rank3ComicName", 3, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank4ComicName = saveRealtimeComicRanking("rank4ComicName", 4, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank5ComicName = saveRealtimeComicRanking("rank5ComicName", 5, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank6ComicName = saveRealtimeComicRanking("rank6ComicName", 6, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank7ComicName = saveRealtimeComicRanking("rank7ComicName", 7, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank8ComicName = saveRealtimeComicRanking("rank8ComicName", 8, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank9ComicName = saveRealtimeComicRanking("rank9ComicName", 9, prevTwoHourSlice, thumbnailUrl);
-        RealtimeComicRanking rank10ComicName = saveRealtimeComicRanking("rank10ComicName", 10, prevTwoHourSlice, thumbnailUrl);
-        List<RealtimeComicRanking> realtimeComicRankings = List.of(
-                rank1ComicName, rank2ComicName, rank3ComicName, rank4ComicName, rank5ComicName,
-                rank6ComicName, rank7ComicName, rank8ComicName, rank9ComicName, rank10ComicName
-        );
-
-        // when
-        ResultActions resultActions = requestUtil.requestGetWithLogin("/comics/real-time/ranking", user);
-
-        // then
-        for (int i = 0; i < realtimeComicRankings.size(); i++) {
+            // then
             resultActions.andExpectAll(
                     status().isOk(),
-                    jsonPath("[" + i + "]" + ".id").value(realtimeComicRankings.get(i).getComic().getId()),
-                    jsonPath("[" + i + "]" + ".rank").value(realtimeComicRankings.get(i).getRank()),
-                    jsonPath("[" + i + "]" + ".name").value(realtimeComicRankings.get(i).getComic().getName()),
-                    jsonPath("[" + i + "]" + ".author").value(realtimeComicRankings.get(i).getComic().getAuthor().getAuthorName()),
-                    jsonPath("[" + i + "]" + ".thumbnailUrl").value(realtimeComicRankings.get(i).getComic().getSmallTypeThumbnailUrl()),
-                    jsonPath("[" + i + "]" + ".views").value(realtimeComicRankings.get(i).getViews())
+                    jsonPath("[0].id").value(mostViewedComic.getId()),
+                    jsonPath("[0].name").value(mostViewedComic.getName()),
+                    jsonPath("[0].author").value(mostViewedComic.getAuthor().getAuthorName()),
+                    jsonPath("[0].thumbnailUrl").value(mostViewComicThumbnail.getImageUrl()),
+                    jsonPath("[0].isNew").value(true),
+                    jsonPath("[0].viewCount").value(5),
+                    jsonPath("[1].id").value(secondViewedComic.getId()),
+                    jsonPath("[1].name").value(secondViewedComic.getName()),
+                    jsonPath("[1].author").value(secondViewedComic.getAuthor().getAuthorName()),
+                    jsonPath("[1].thumbnailUrl").value(secondViewComicThumbnail.getImageUrl()),
+                    jsonPath("[1].isNew").value(true),
+                    jsonPath("[1].viewCount").value(1)
+            );
+
+            // docs
+            resultActions.andDo(
+                    document("장르별 웹툰 목록 조회 성공",
+                            ResourceSnippetParameters.builder()
+                                    .tag("장르별 웹툰 목록 조회")
+                                    .summary("장르별 웹툰 목록 조회 성공 APIs"),
+                            requestParameters(
+                                    parameterWithName("genre").description("조회할 장르")
+                            ),
+                            responseFields(
+                                    fieldWithPath("[].id").description("웹툰 id"),
+                                    fieldWithPath("[].name").description("웹툰 이름"),
+                                    fieldWithPath("[].author").description("웹툰 작가 이름"),
+                                    fieldWithPath("[].thumbnailUrl").description("웹툰 썸네일 URL"),
+                                    fieldWithPath("[].isNew").description("신작 웹툰 여부"),
+                                    fieldWithPath("[].viewCount").description("최신 에피소드 조회수")
+                            )
+                    )
             );
         }
 
-        // docs
-        resultActions.andDo(
-                document("실시간 인기 웹툰 목록 조회 성공",
-                        ResourceSnippetParameters.builder()
-                                .tag(GET_COMICS_BY_REALTIME_RANKING_TAG)
-                                .summary(GET_COMICS_BY_REALTIME_RANKING_SUMMARY),
-                        responseFields(
-                                fieldWithPath(COMICS_BY_REALTIME_RANKING_RESPONSE_ID_FIELD).description(COMICS_BY_REALTIME_RANKING_RESPONSE_ID_DESCRIPTION),
-                                fieldWithPath(COMICS_BY_REALTIME_RANKING_RESPONSE_RANK_FIELD).description(COMICS_BY_REALTIME_RANKING_RESPONSE_RANK_DESCRIPTION),
-                                fieldWithPath(COMICS_BY_REALTIME_RANKING_RESPONSE_NAME_FIELD).description(COMICS_BY_REALTIME_RANKING_RESPONSE_NAME_DESCRIPTION),
-                                fieldWithPath(COMICS_BY_REALTIME_RANKING_RESPONSE_AUTHOR_FIELD).description(COMICS_BY_REALTIME_RANKING_RESPONSE_AUTHOR_DESCRIPTION),
-                                fieldWithPath(COMICS_BY_REALTIME_RANKING_RESPONSE_THUMBNAIL_FIELD).description(COMICS_BY_REALTIME_RANKING_RESPONSE_THUMBNAIL_DESCRIPTION),
-                                fieldWithPath(COMICS_BY_REALTIME_RANKING_RESPONSE_VIEWS_FIELD).description(COMICS_BY_REALTIME_RANKING_RESPONSE_VIEWS_DESCRIPTION)
-                        )
-                )
-        );
+        private MultiValueMap<String, String> setParameterForGenre(String requestGenre) {
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("genre", requestGenre);
+
+            return params;
+        }
+
+        private ResultActions requestGetComicsByGenre(MockHttpSession session, MultiValueMap<String, String> params) throws Exception {
+            return mockMvc.perform(get("/comics/by-genre")
+                    .params(params)
+                    .session(session)
+            );
+        }
     }
 
-    private TwoHourSlice getPrevTwoHourSlice() {
-        return TwoHourSlice.getPrev(LocalTime.now());
+    @Nested
+    @Transactional
+    @DisplayName("실시간 인기 웹툰 목록 조회 성공")
+    class GetRealtimeRankingComics {
+
+        @Test
+        @DisplayName("실시간 인기 웹툰 목록 조회에 성공한다.")
+        void getComicsByRealtimeRankingSuccess() throws Exception {
+            // given
+            User user = UserDummy.createUser();
+            MockHttpSession loginSession = loginUser(user.getId(), user.getLoginId(), user.getAuthority());
+
+            TwoHourSlice prevTwoHourSlice = getPrevTwoHourSlice();
+
+            Author author = saveAuthor();
+            List<RealtimeComicRanking> realtimeComicRankingsOrderedByRank = save10RealtimeRankingComicsAtSameTime(prevTwoHourSlice, author);
+
+            // when
+            ResultActions resultActions = requestGetComicsByRealtimeRanking(loginSession);
+
+            // then
+            for (int i = 0; i < realtimeComicRankingsOrderedByRank.size(); i++) {
+                resultActions.andExpectAll(
+                        status().isOk(),
+                        jsonPath("[" + i + "]" + ".id").value(realtimeComicRankingsOrderedByRank.get(i).getComic().getId()),
+                        jsonPath("[" + i + "]" + ".rank").value(realtimeComicRankingsOrderedByRank.get(i).getRank()),
+                        jsonPath("[" + i + "]" + ".name").value(realtimeComicRankingsOrderedByRank.get(i).getComic().getName()),
+                        jsonPath("[" + i + "]" + ".author").value(realtimeComicRankingsOrderedByRank.get(i).getComic().getAuthor().getAuthorName()),
+                        jsonPath("[" + i + "]" + ".thumbnailUrl").value(realtimeComicRankingsOrderedByRank.get(i).getComic().getSmallTypeThumbnailUrl()),
+                        jsonPath("[" + i + "]" + ".views").value(realtimeComicRankingsOrderedByRank.get(i).getViews())
+                );
+            }
+
+            // docs
+            resultActions.andDo(
+                    document("실시간 인기 웹툰 목록 조회 성공",
+                            ResourceSnippetParameters.builder()
+                                    .tag("실시간 인기 웹툰 목록 조회")
+                                    .summary("실시간 웹툰 목록 조회 성공 APIs"),
+                            responseFields(
+                                    fieldWithPath("[].id").description("웹툰 id"),
+                                    fieldWithPath("[].rank").description("랭킹"),
+                                    fieldWithPath("[].name").description("웹툰 이름"),
+                                    fieldWithPath("[].author").description("웹툰 작가 이름"),
+                                    fieldWithPath("[].thumbnailUrl").description("웹툰 썸네일 URL"),
+                                    fieldWithPath("[].views").description("조회수")
+                            )
+                    )
+            );
+        }
+
+        private TwoHourSlice getPrevTwoHourSlice() {
+            return TwoHourSlice.getPrev(LocalTime.now());
+        }
+
+        private List<RealtimeComicRanking> save10RealtimeRankingComicsAtSameTime(TwoHourSlice prevTwoHourSlice, Author author) {
+            RealtimeComicRanking rank1ComicName = saveRealtimeRankingComic("rank1ComicName", 1, prevTwoHourSlice, author);
+            RealtimeComicRanking rank2ComicName = saveRealtimeRankingComic("rank2ComicName", 2, prevTwoHourSlice, author);
+            RealtimeComicRanking rank3ComicName = saveRealtimeRankingComic("rank3ComicName", 3, prevTwoHourSlice, author);
+            RealtimeComicRanking rank4ComicName = saveRealtimeRankingComic("rank4ComicName", 4, prevTwoHourSlice, author);
+            RealtimeComicRanking rank5ComicName = saveRealtimeRankingComic("rank5ComicName", 5, prevTwoHourSlice, author);
+            RealtimeComicRanking rank6ComicName = saveRealtimeRankingComic("rank6ComicName", 6, prevTwoHourSlice, author);
+            RealtimeComicRanking rank7ComicName = saveRealtimeRankingComic("rank7ComicName", 7, prevTwoHourSlice, author);
+            RealtimeComicRanking rank8ComicName = saveRealtimeRankingComic("rank8ComicName", 8, prevTwoHourSlice, author);
+            RealtimeComicRanking rank9ComicName = saveRealtimeRankingComic("rank9ComicName", 9, prevTwoHourSlice, author);
+            RealtimeComicRanking rank10ComicName = saveRealtimeRankingComic("rank10ComicName", 10, prevTwoHourSlice, author);
+
+            return List.of(
+                    rank1ComicName, rank2ComicName, rank3ComicName, rank4ComicName, rank5ComicName,
+                    rank6ComicName, rank7ComicName, rank8ComicName, rank9ComicName, rank10ComicName
+            );
+        }
+
+        private RealtimeComicRanking saveRealtimeRankingComic(String comicName, int rank, TwoHourSlice twoHourSlice, Author author) {
+            Comic comic = ComicDummy.createComic(comicName, author);
+            Thumbnail thumbnail = ThumbnailDummy.createSmallTypeThumbnail("thumbnailUrl", comic);
+            comicRepository.save(comic);
+            thumbnailRepository.save(thumbnail);
+
+            return realtimeComicRankingRepository.save(
+                    RealtimeComicRankingDummy.createRealtimeComicRanking(twoHourSlice, rank, comic)
+            );
+        }
+
+        private ResultActions requestGetComicsByRealtimeRanking(MockHttpSession session) throws Exception {
+            return mockMvc.perform(get("/comics/real-time/ranking")
+                    .session(session));
+        }
     }
 
-    private Comic saveComic(String name, Genre genre) {
-        Comic comic = createComic(name, genre, "summary", PublishDayOfWeek.MON, author);
+    private Comic saveComic(String name, Genre genre, Author author) {
+        Comic comic = ComicDummy.createComic(name, genre, author);
         comicRepository.save(comic);
 
         return comic;
     }
 
     private Thumbnail saveThumbnail(String thumbnailUrl, Comic comic) {
-        return thumbnailRepository.save(createThumbnail(ThumbnailType.MAIN, thumbnailUrl, comic));
+        return thumbnailRepository.save(ThumbnailDummy.createMainTypeThumbnail(thumbnailUrl, comic));
     }
 
-    private void giveViewsToComicLimitFive(Comic comic, int viewCount) {
+    private void giveViewsToComicLimitFive(Comic comic, int viewCount, List<User> viewers) {
         if (viewCount > 5) {
             throw new IllegalArgumentException("조회수는 5이하로 넣어주세요.");
         }
-        Episode episode = createEpisode("episode", 1, "thumbnailUrl", comic);
+        Episode episode = EpisodeDummy.createEpisode(comic);
         episodeRepository.save(episode);
 
         for (int i = 0; i < viewCount; i++) {
-            viewRepository.save(createView(viewers.get(i), episode));
+            viewRepository.save(ViewDummy.createView(viewers.get(i), episode));
         }
     }
 
-    private void setSessionForAuthentication() {
-        session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(user.getId(), user.getLoginId(), user.getAuthority()));
-    }
-
-    private RealtimeComicRanking saveRealtimeComicRanking(String comicName, int rank, TwoHourSlice twoHourSlice, String thumbnailUrl) {
-        Comic comic = ComicDummy.createComic(comicName, author);
-        Thumbnail thumbnail = ThumbnailDummy.createSmallTypeThumbnail(thumbnailUrl, comic);
-        comicRepository.save(comic);
-        thumbnailRepository.save(thumbnail);
-
-        return realtimeComicRankingRepository.save(
-                RealtimeComicRankingDummy.createRealtimeComicRanking(twoHourSlice, rank, comic)
-        );
-    }
-
-    @BeforeEach
-    void init() {
-        user = createUser(UserAuthority.AUTHOR);
-        author = createAuthor(user);
-
-        User viewer1 = createUser(new Email("email1@email.com"), new LoginId("loginId1"));
-        User viewer2 = createUser(new Email("email2@email.com"), new LoginId("loginId2"));
-        User viewer3 = createUser(new Email("email3@email.com"), new LoginId("loginId3"));
-        User viewer4 = createUser(new Email("email4@email.com"), new LoginId("loginId4"));
-        User viewer5 = createUser(new Email("email5@email.com"), new LoginId("loginId5"));
-        viewers = List.of(viewer1, viewer2, viewer3, viewer4, viewer5);
+    private List<User> setViewers() {
+        User viewer1 = UserDummy.createUser(new Email("email1@email.com"), new LoginId("loginId1"));
+        User viewer2 = UserDummy.createUser(new Email("email2@email.com"), new LoginId("loginId2"));
+        User viewer3 = UserDummy.createUser(new Email("email3@email.com"), new LoginId("loginId3"));
+        User viewer4 = UserDummy.createUser(new Email("email4@email.com"), new LoginId("loginId4"));
+        User viewer5 = UserDummy.createUser(new Email("email5@email.com"), new LoginId("loginId5"));
+        List<User> viewers = List.of(viewer1, viewer2, viewer3, viewer4, viewer5);
         userRepository.saveAll(viewers);
 
+        return viewers;
+    }
+
+    private MockHttpSession loginUser(Long userId, LoginId loginId, UserAuthority userAuthority) {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(UserSessionUtil.LOGIN_MEMBER_ID, new UserAuthDTO(userId, loginId, userAuthority));
+        return session;
+    }
+
+    private Author saveAuthor() {
+        User user = UserDummy.createUser(UserAuthority.AUTHOR);
+        Author author = AuthorDummy.createAuthor(user);
         userRepository.save(user);
         authorRepository.save(author);
-
-        setSessionForAuthentication();
+        return author;
     }
 }

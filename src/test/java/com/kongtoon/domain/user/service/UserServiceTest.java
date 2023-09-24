@@ -11,17 +11,18 @@ import com.kongtoon.domain.user.model.LoginId;
 import com.kongtoon.domain.user.model.Password;
 import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
+import com.kongtoon.support.dummy.UserDummy;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static com.kongtoon.utils.TestUtil.createLoginRequest;
-import static com.kongtoon.utils.TestUtil.createUser;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -38,151 +39,172 @@ class UserServiceTest {
 	@InjectMocks
 	UserService userService;
 
-	@Test
-	@DisplayName("회원가입에 성공한다.")
-	void signupSuccess() {
-		// given
-		LoginId loginId = new LoginId("loginId");
-		String name = "name";
-		Email email = new Email("email@email.com");
-		String nickname = "nickname";
-		Password password = new Password("password");
-		String encryptedPassword = "encryptedPassword";
+	@Nested
+	@Transactional
+	@DisplayName("회원가입 성공")
+	class SignupSuccess {
 
-		SignupRequest signupRequest = new SignupRequest(
-				loginId, name, email, nickname, password
-		);
+		@Test
+		@DisplayName("회원가입에 성공한다.")
+		void signupSuccess() {
+			// given
+			LoginId loginId = new LoginId("loginId");
+			String name = "name";
+			Email email = new Email("email@email.com");
+			String nickname = "nickname";
+			Password password = new Password("password");
 
-		when(userRepository.existsByLoginId(loginId))
-				.thenReturn(false);
-		when(userRepository.existsByEmail(email))
-				.thenReturn(false);
+			SignupRequest signupRequest = new SignupRequest(
+					loginId, name, email, nickname, password
+			);
 
-		// when
-		userService.signup(signupRequest);
+			when(userRepository.existsByLoginId(loginId))
+					.thenReturn(false);
+			when(userRepository.existsByEmail(email))
+					.thenReturn(false);
 
-		// then
-		verify(userRepository).save(any(User.class));
-		verify(userRepository).existsByLoginId(loginId);
-		verify(userRepository).existsByEmail(email);
+			// when
+			userService.signup(signupRequest);
+
+			// then
+			verify(userRepository).save(any(User.class));
+			verify(userRepository).existsByLoginId(loginId);
+			verify(userRepository).existsByEmail(email);
+		}
 	}
 
-	@Test
-	@DisplayName("회원가입 시 이메일 중복으로 실패한다.")
-	void signUpDuplicatedEmailFail() {
-		// given
-		LoginId loginId = new LoginId("loginId");
-		String name = "name";
-		Email email = new Email("email@email.com");
-		String nickname = "nickname";
-		Password password = new Password("password");
+	@Nested
+	@Transactional
+	@DisplayName("회원가입 실패")
+	class SignUpFail {
 
-		SignupRequest signupRequest = new SignupRequest(
-				loginId, name, email, nickname, password
-		);
+		@Test
+		@DisplayName("회원가입 시 이메일 중복으로 실패한다.")
+		void signUpDuplicatedEmailFail() {
+			// given
+			LoginId loginId = new LoginId("loginId");
+			String name = "name";
+			Email email = new Email("email@email.com");
+			String nickname = "nickname";
+			Password password = new Password("password");
 
-		when(userRepository.existsByEmail(email))
-				.thenReturn(true);
+			SignupRequest signupRequest = new SignupRequest(
+					loginId, name, email, nickname, password
+			);
 
-		// when, then
-		assertThatThrownBy(() -> userService.signup(signupRequest))
-				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.DUPLICATE_EMAIL);
+			when(userRepository.existsByEmail(email))
+					.thenReturn(true);
 
-		verify(userRepository).existsByEmail(email);
+			// when, then
+			assertThatThrownBy(() -> userService.signup(signupRequest))
+					.isInstanceOf(BusinessException.class)
+					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.DUPLICATE_EMAIL);
+
+			verify(userRepository).existsByEmail(email);
+		}
+
+		@Test
+		@DisplayName("회원가입 시 로그인 아이디 중복으로 실패한다.")
+		void signUpDuplicatedLoginIdFail() {
+			// given
+			LoginId loginId = new LoginId("loginId");
+			String name = "name";
+			Email email = new Email("email@email.com");
+			String nickname = "nickname";
+			Password password = new Password("password");
+
+			SignupRequest signupRequest = new SignupRequest(
+					loginId, name, email, nickname, password
+			);
+
+			when(userRepository.existsByEmail(email))
+					.thenReturn(false);
+			when(userRepository.existsByLoginId(loginId))
+					.thenReturn(true);
+
+			// when, then
+			assertThatThrownBy(() -> userService.signup(signupRequest))
+					.isInstanceOf(BusinessException.class)
+					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.DUPLICATE_LOGIN_ID);
+
+			verify(userRepository).existsByEmail(email);
+			verify(userRepository).existsByLoginId(loginId);
+		}
 	}
 
-	@Test
-	@DisplayName("회원가입 시 로그인 아이디 중복으로 실패한다.")
-	void signUpDuplicatedLoginIdFail() {
-		// given
-		LoginId loginId = new LoginId("loginId");
-		String name = "name";
-		Email email = new Email("email@email.com");
-		String nickname = "nickname";
-		Password password = new Password("password");
+	@Nested
+	@Transactional
+	@DisplayName("로그인 성공")
+	class LoginSuccess {
 
-		SignupRequest signupRequest = new SignupRequest(
-				loginId, name, email, nickname, password
-		);
+		@Test
+		@DisplayName("로그인에 성공한다.")
+		void loginSuccess() {
+			// given
+			LoginRequest loginRequest = UserDummy.createLoginRequest();
+			User user = UserDummy.createUser(loginRequest.loginId(), loginRequest.password());
+			UserAuthDTO correctResult = UserDummy.createUserAuth(user.getLoginId(), user.getAuthority());
 
-		when(userRepository.existsByEmail(email))
-				.thenReturn(false);
-		when(userRepository.existsByLoginId(loginId))
-				.thenReturn(true);
+			when(userRepository.findByLoginId(loginRequest.loginId()))
+					.thenReturn(Optional.of(user));
+			when(passwordEncoder.isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue()))
+					.thenReturn(true);
 
-		// when, then
-		assertThatThrownBy(() -> userService.signup(signupRequest))
-				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.DUPLICATE_LOGIN_ID);
+			// when
+			UserAuthDTO result = userService.login(loginRequest);
 
-		verify(userRepository).existsByEmail(email);
-		verify(userRepository).existsByLoginId(loginId);
+			// then
+			verify(userRepository).findByLoginId(loginRequest.loginId());
+			verify(passwordEncoder).isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue());
+
+			assertThat(result).usingRecursiveComparison()
+					.ignoringFields("userId")
+					.isEqualTo(correctResult);
+		}
 	}
 
-	@Test
-	@DisplayName("로그인에 성공한다.")
-	void loginSuccess() {
-		// given
-		Email email = new Email("email@email.com");
-		LoginRequest loginRequest = createLoginRequest();
-		User user = createUser(email, loginRequest.loginId(), loginRequest.password());
-		UserAuthDTO correctResult = new UserAuthDTO(0L, user.getLoginId(), user.getAuthority());
+	@Nested
+	@Transactional
+	@DisplayName("로그인 실패")
+	class LoginFail {
 
-		when(userRepository.findByLoginId(loginRequest.loginId()))
-				.thenReturn(Optional.of(user));
-		when(passwordEncoder.isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue()))
-				.thenReturn(true);
+		@Test
+		@DisplayName("로그인시 존재하지 않는 로그인 ID로 실패한다.")
+		void loginNotExistLoginIdFail() {
+			// given
+			LoginRequest loginRequest = UserDummy.createLoginRequest();
 
-		// when
-		UserAuthDTO result = userService.login(loginRequest);
+			when(userRepository.findByLoginId(loginRequest.loginId()))
+					.thenReturn(Optional.empty());
 
-		// then
-		verify(userRepository).findByLoginId(loginRequest.loginId());
-		verify(passwordEncoder).isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue());
+			// when, then
+			assertThatThrownBy(() -> userService.login(loginRequest))
+					.isInstanceOf(BusinessException.class)
+					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
 
-		assertThat(result).usingRecursiveComparison()
-				.ignoringFields("userId")
-				.isEqualTo(correctResult);
-	}
+			verify(userRepository).findByLoginId(loginRequest.loginId());
+		}
 
-	@Test
-	@DisplayName("로그인시 존재하지 않는 로그인 ID로 실패한다.")
-	void loginNotExistLoginIdFail() {
-		// given
-		LoginRequest loginRequest = createLoginRequest();
+		@Test
+		@DisplayName("로그인시 비밀번호 불일치로 실패한다.")
+		void loginPasswordMismatchFail() {
+			// given
+			LoginRequest loginRequest = UserDummy.createLoginRequest();
+			Password mismatchPassword = new Password("mismatchPassword");
+			User user = UserDummy.createUser(loginRequest.loginId(), mismatchPassword);
 
-		when(userRepository.findByLoginId(loginRequest.loginId()))
-				.thenReturn(Optional.empty());
+			when(userRepository.findByLoginId(loginRequest.loginId()))
+					.thenReturn(Optional.of(user));
+			when(passwordEncoder.isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue()))
+					.thenReturn(false);
 
-		// when, then
-		assertThatThrownBy(() -> userService.login(loginRequest))
-				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
+			// when, hen
+			assertThatThrownBy(() -> userService.login(loginRequest))
+					.isInstanceOf(BusinessException.class)
+					.hasFieldOrPropertyWithValue("errorCode", ErrorCode.LOGIN_FAIL);
 
-		verify(userRepository).findByLoginId(loginRequest.loginId());
-	}
-
-	@Test
-	@DisplayName("로그인시 비밀번호 불일치로 실패한다.")
-	void loginPasswordMismatchFail() {
-		// given
-		Email email = new Email("email@email.com");
-		LoginRequest loginRequest = createLoginRequest();
-		Password mismatchPassword = new Password("mismatchPassword");
-		User user = createUser(email, loginRequest.loginId(), mismatchPassword);
-
-		when(userRepository.findByLoginId(loginRequest.loginId()))
-				.thenReturn(Optional.of(user));
-		when(passwordEncoder.isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue()))
-				.thenReturn(false);
-
-		// when, hen
-		assertThatThrownBy(() -> userService.login(loginRequest))
-				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.LOGIN_FAIL);
-
-		verify(userRepository).findByLoginId(loginRequest.loginId());
-		verify(passwordEncoder).isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue());
+			verify(userRepository).findByLoginId(loginRequest.loginId());
+			verify(passwordEncoder).isMatch(loginRequest.password().getPasswordValue(), user.getPassword().getPasswordValue());
+		}
 	}
 }

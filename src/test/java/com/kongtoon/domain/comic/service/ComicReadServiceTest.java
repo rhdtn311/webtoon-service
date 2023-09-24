@@ -6,11 +6,13 @@ import com.kongtoon.domain.comic.model.dto.response.ComicByRealtimeRankingRespon
 import com.kongtoon.domain.comic.repository.ComicRepository;
 import com.kongtoon.support.dummy.ComicDummy;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,53 +29,65 @@ class ComicReadServiceTest {
     @Mock
     ComicRepository comicRepository;
 
-    @Test
-    @DisplayName("장르별 웹툰 목록 조회에 성공한다.")
-    void getComicsByGenreSuccess() {
-        // given
-        List<ComicByGenreResponse> expectedComicsByGenre = createActionGenreComics();
+    @Nested
+    @Transactional
+    @DisplayName("장르별 웹툰 목록 조회 성공")
+    class GetComicsByGenreSuccess {
 
-        // when
-        List<ComicByGenreResponse> comicsByAnyGenreResult = getComicsByActionGenre(expectedComicsByGenre);
+        @Test
+        @DisplayName("장르별 웹툰 목록 조회에 성공한다.")
+        void getComicsByGenreSuccess() {
+            // given
+            List<ComicByGenreResponse> expectedComicsByGenre = createActionGenreComics();
 
-        // then
-        assertThat(comicsByAnyGenreResult).containsAll(expectedComicsByGenre);
+            // when
+            List<ComicByGenreResponse> comicsByAnyGenreResult = getComicsByActionGenre(expectedComicsByGenre);
+
+            // then
+            assertThat(comicsByAnyGenreResult).containsAll(expectedComicsByGenre);
+        }
+
+        public List<ComicByGenreResponse> createActionGenreComics() {
+            return List.of(
+                    ComicDummy.createComicResponse(1L),
+                    ComicDummy.createComicResponse(2L),
+                    ComicDummy.createComicResponse(3L)
+            );
+        }
+
+        private List<ComicByGenreResponse> getComicsByActionGenre(List<ComicByGenreResponse> comicByGenreResponses) {
+            when(comicRepository.findComicsByGenre(Genre.ACTION))
+                    .thenReturn(comicByGenreResponses);
+
+            return comicReadService.getComicsByGenre(Genre.ACTION);
+        }
     }
 
-    public List<ComicByGenreResponse> createActionGenreComics() {
-        return List.of(
-                ComicDummy.createComicResponse(1L),
-                ComicDummy.createComicResponse(2L),
-                ComicDummy.createComicResponse(3L)
-        );
-    }
+    @Nested
+    @Transactional
+    @DisplayName("실시간 인기 웹툰 목록 조회 성공")
+    class GetRealtimeRankingComics {
 
-    private List<ComicByGenreResponse> getComicsByActionGenre(List<ComicByGenreResponse> comicByGenreResponses) {
-        when(comicRepository.findComicsByGenre(Genre.ACTION))
-                .thenReturn(comicByGenreResponses);
+        @Test
+        @DisplayName("실시간 인기 웹툰 목록 조회에 성공한다.")
+        void getComicsByRealtimeRankingSuccess() {
+            // given
+            List<ComicByRealtimeRankingResponse> expectedComicRankings = getComicByRealtimeRankingResponses();
 
-        return comicReadService.getComicsByGenre(Genre.ACTION);
-    }
+            // when
+            List<ComicByRealtimeRankingResponse> comicRankingsResult = comicReadService.getComicsByRealtimeRanking();
 
-    @Test
-    @DisplayName("실시간 인기 웹툰 목록 조회에 성공한다.")
-    void getComicsByRealtimeRankingSuccess() {
-        // given
-        List<ComicByRealtimeRankingResponse> expectedComicRankings = getComicByRealtimeRankingResponses();
+            // then
+            assertThat(comicRankingsResult).containsAll(expectedComicRankings);
+        }
 
-        // when
-        List<ComicByRealtimeRankingResponse> comicRankingsResult = comicReadService.getComicsByRealtimeRanking();
+        private List<ComicByRealtimeRankingResponse> getComicByRealtimeRankingResponses() {
+            List<ComicByRealtimeRankingResponse> expectedComicRankings = ComicDummy.getComicByRealtimeRankingResponses();
 
-        // then
-        assertThat(comicRankingsResult).containsAll(expectedComicRankings);
-    }
+            when(comicRepository.findComicsByRealtimeRanking(any(), any()))
+                    .thenReturn(expectedComicRankings);
 
-    private List<ComicByRealtimeRankingResponse> getComicByRealtimeRankingResponses() {
-        List<ComicByRealtimeRankingResponse> expectedComicRankings = ComicDummy.getComicByRealtimeRankingResponses();
-
-        when(comicRepository.findComicsByRealtimeRanking(any(), any()))
-                .thenReturn(expectedComicRankings);
-
-        return expectedComicRankings;
+            return expectedComicRankings;
+        }
     }
 }

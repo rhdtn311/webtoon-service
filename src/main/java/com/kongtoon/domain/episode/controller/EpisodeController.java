@@ -2,7 +2,6 @@ package com.kongtoon.domain.episode.controller;
 
 import com.kongtoon.common.security.annotation.LoginCheck;
 import com.kongtoon.domain.episode.model.dto.request.EpisodeRequest;
-import com.kongtoon.domain.episode.model.dto.response.EpisodeDetailResponse;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeListResponses;
 import com.kongtoon.domain.episode.model.dto.response.EpisodeResponse;
 import com.kongtoon.domain.episode.service.EpisodeModifyService;
@@ -73,19 +72,5 @@ public class EpisodeController {
 		EpisodeResponse episodeResponse = episodeReadService.getEpisodeResponse(episodeId);
 
 		return ResponseEntity.ok(episodeResponse);
-	}
-
-	@LoginCheck(authority = UserAuthority.USER)
-	@GetMapping("/episodes/{episodeId}/detail")
-	public ResponseEntity<EpisodeDetailResponse> getEpisodeDetail(
-			@PathVariable @Positive Long episodeId,
-			UserAuthDTO userAuth
-	) {
-		EpisodeDetailResponse episodeDetailResponse = episodeReadService.getEpisodeDetailResponse(
-				episodeId,
-				userAuth.loginId()
-		);
-
-		return ResponseEntity.ok(episodeDetailResponse);
 	}
 }

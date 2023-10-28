@@ -110,7 +110,7 @@ class UserControllerTest {
 
 			resultActions.andExpectAll(
 					status().isCreated(),
-					header().string("Location", "/users/signup/" + findUser.get().getId())
+					header().string("Location", "/signup/" + findUser.get().getId())
 			);
 
 			// docs
@@ -289,7 +289,7 @@ class UserControllerTest {
 	}
 
 	private ResultActions requestSignup(SignupRequest signupRequest) throws Exception {
-		return mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup")
+		return mockMvc.perform(RestDocumentationRequestBuilders.post("/signup")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signupRequest)));
 	}
@@ -360,7 +360,7 @@ class UserControllerTest {
 	}
 
 	private ResultActions requestCheckDuplicateLoginId(String loginId) throws Exception {
-		return mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-id/{loginId}", loginId));
+		return mockMvc.perform(RestDocumentationRequestBuilders.post("/check-duplicate-id/{loginId}", loginId));
 	}
 
 	private static PathParametersSnippet createCheckDuplicateLoginIdDocs() {
@@ -435,7 +435,7 @@ class UserControllerTest {
 	}
 
 	private ResultActions requestCheckDuplicateEmail(String email) throws Exception {
-		return mockMvc.perform(RestDocumentationRequestBuilders.post("/users/signup/check-duplicate-email/{email}", email));
+		return mockMvc.perform(RestDocumentationRequestBuilders.post("/check-duplicate-email/{email}", email));
 	}
 
 	private PathParametersSnippet createCheckDuplicateEmailDocs() {
@@ -553,7 +553,7 @@ class UserControllerTest {
 	}
 
 	private ResultActions requestLogin(LoginRequest loginRequest) throws Exception {
-		return mockMvc.perform(RestDocumentationRequestBuilders.post("/users/login")
+		return mockMvc.perform(RestDocumentationRequestBuilders.post("/login")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)));
 	}
@@ -594,7 +594,7 @@ class UserControllerTest {
 	}
 
 	private ResultActions requestLogout(MockHttpSession session) throws Exception {
-		return mockMvc.perform(RestDocumentationRequestBuilders.post("/users/logout")
+		return mockMvc.perform(RestDocumentationRequestBuilders.post("/logout")
 				.session(session)
 		);
 	}

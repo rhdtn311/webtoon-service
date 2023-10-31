@@ -260,7 +260,7 @@ public class ComicReadControllerTest {
         }
 
         private ResultActions requestGetComicsByRealtimeRanking(MockHttpSession session) throws Exception {
-            return mockMvc.perform(get("/comics/real-time/ranking")
+            return mockMvc.perform(get("/comics/real-time-ranking")
                     .session(session));
         }
     }

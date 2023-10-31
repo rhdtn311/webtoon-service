@@ -84,7 +84,7 @@ public class ComicController {
 	}
 
 	@LoginCheck(authority = UserAuthority.USER)
-	@GetMapping("/real-time/ranking")
+	@GetMapping("/real-time-ranking")
 	public ResponseEntity<List<ComicByRealtimeRankingResponse>> getComicsByRealtimeRanking() {
 		List<ComicByRealtimeRankingResponse> comicsByRealtimeRankingResponses = comicReadService.getComicsByRealtimeRanking();
 

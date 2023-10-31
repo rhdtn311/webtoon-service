@@ -20,8 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
 
-import static java.util.stream.Collectors.toMap;
+import static java.util.Comparator.comparingInt;
+import static java.util.stream.Collectors.*;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +64,7 @@ public class AuthorService {
 		Author author = getAuthor(authorId);
 
 		List<Comic> comics = comicRepository.findByAuthorWithThumbnails(author);
-		List<Episode> episodes = episodeRepository.findRecentlyEpisodesByComics(comics);
+		List<Episode> episodes = episodeRepository.findEpisodesByComics(comics);
 
 		Map<Long, String> smallThumbnailUrlsOfComic = getComicIdWithSmallThumbnailUrl(comics);
 		Map<Long, Integer> lastEpisodeNumbersOfComic = getComicIdWithLastEpisodeNumber(episodes);
@@ -82,6 +84,13 @@ public class AuthorService {
 
 	private Map<Long, Integer> getComicIdWithLastEpisodeNumber(List<Episode> episodes) {
 		return episodes.stream()
-				.collect(toMap(Episode::getComicId, Episode::getEpisodeNumber));
+				.collect(groupingBy(Episode::getComicId, collectLastEpisodeNumber()));
+	}
+
+	private Collector<Episode, Object, Integer> collectLastEpisodeNumber() {
+		return collectingAndThen(
+				maxBy(comparingInt(Episode::getEpisodeNumber)),
+				episode -> episode.map(Episode::getEpisodeNumber).orElse(0)
+		);
 	}
 }

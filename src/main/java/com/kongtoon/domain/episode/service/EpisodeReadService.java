@@ -20,7 +20,9 @@ import com.kongtoon.domain.user.model.User;
 import com.kongtoon.domain.user.repository.UserRepository;
 import com.kongtoon.domain.view.model.View;
 import com.kongtoon.domain.view.repository.ViewRepository;
+import com.kongtoon.domain.view.service.event.EpisodeViewedEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,8 @@ public class EpisodeReadService {
 	private final ThumbnailRepository thumbnailRepository;
 	private final EpisodeImageRepository episodeImageRepository;
 
+	private final ApplicationEventPublisher applicationEventPublisher;
+
 	@Transactional(readOnly = true)
 	public EpisodeListResponses getEpisodes(Long comicId, LoginId loginId) {
 		List<Episode> episodes = episodeRepository.findByComicIdWithComicAndAuthor(comicId);
@@ -59,11 +63,13 @@ public class EpisodeReadService {
 	}
 
 	@Transactional(readOnly = true)
-	public EpisodeResponse getEpisodeResponse(Long episodeId) {
+	public EpisodeResponse getEpisodeResponse(Long episodeId, LoginId loginId) {
+		User user = getUser(loginId);
 		Episode episode = getEpisode(episodeId);
 		List<EpisodeImage> episodeImages = getEpisodeImages(episode);
 		List<EpisodeImageResponse> episodeImageResponses = EpisodeImageResponse.toEpisodeImageResponses(episodeImages);
 
+		applicationEventPublisher.publishEvent(new EpisodeViewedEvent(user, episode));
 		return EpisodeResponse.from(episode, episodeImageResponses);
 	}
 

@@ -67,9 +67,10 @@ public class EpisodeController {
 	@LoginCheck(authority = UserAuthority.USER)
 	@GetMapping("/episodes/{episodeId}")
 	public ResponseEntity<EpisodeResponse> getEpisode(
-			@PathVariable @Positive Long episodeId
+			@PathVariable @Positive Long episodeId,
+			UserAuthDTO userAuth
 	) {
-		EpisodeResponse episodeResponse = episodeReadService.getEpisodeResponse(episodeId);
+		EpisodeResponse episodeResponse = episodeReadService.getEpisodeResponse(episodeId, userAuth.loginId());
 
 		return ResponseEntity.ok(episodeResponse);
 	}
